@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Tournament;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'nickname',
     ];
 
     /**
@@ -44,5 +46,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function tournaments()
+    {
+        return $this->hasMany(Tournament::class);
+    }
+    
+    /**
+     * The attributes that should be appended to the model's array form.
+     *
+     * @return list<string>
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin'; 
     }
 }
