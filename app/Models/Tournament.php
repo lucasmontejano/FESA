@@ -20,6 +20,11 @@ class Tournament extends Model
         'banner',
     ];
 
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'user_id');

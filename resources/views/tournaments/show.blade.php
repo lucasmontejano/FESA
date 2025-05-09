@@ -1,16 +1,12 @@
-<!doctype html>
-<html class="no-js" lang="en">
-
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-	<meta charset="utf-8">
-	<title>Big- Gamer Team Single</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-	<!-- site favicon -->
-	<link rel="icon" type="image/png" href="{{ asset("images/favicon.png") }}">
-	<!-- Place favicon.ico in the root directory -->
-
-	<!-- All stylesheet and icons css  -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Torneios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- All stylesheet and icons css  -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('css/icofont.min.css') }}">
@@ -18,7 +14,9 @@
     <link rel="stylesheet" href="{{ asset('css/lightcase.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/style.min.css') }}">
+
 </head>
+
 
 <body>
 	<!-- preloader start here -->
@@ -64,7 +62,7 @@
                             </div>
                             <div class="menu-area">
                                 <ul class="menu">
-                                    <li><a href="{{ url("") }}">Home</a></li>
+                                    <li><a href="{{ url("index.html") }}">Home</a></li>
     
                                     <li>
                                         <a href="{{ url("#0") }}">Features</a>
@@ -172,101 +170,91 @@
     </header>
     
 	<!-- ==========Header Section Ends Here========== -->
+    
 
 
+    <!-- ===========Banner Section start Here========== -->
 
-	<!-- ===========Banner Section start Here========== -->
-	<section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
-		<div class="container">
-            <div class="section-wrapper text-center text-uppercase">
-                <h2 class="pageheader-title">Entre para competir</h2>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-center mb-0">
-                      <li class="breadcrumb-item"><a href="{{ url("index.html") }}">Home</a></li>
-                      <li class="breadcrumb-item active" aria-current="page">Login</li>
-                    </ol>
-                </nav>
+    <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+        <div class="container mx-auto py-8">
+            <!-- Tournament Header -->
+            <div class="flex flex-col md:flex-row gap-6 mb-8">
+                <!-- Tournament Banner -->
+                <div class="md:w-2/3">
+                    @if($tournament->banner)
+                    <img src="{{ url('storage/' . $tournament->banner) }}" 
+                        alt="{{ $tournament->name }} Banner"
+                        class="w-full h-64 md:h-96 object-cover rounded-lg">
+                    @endif
+                </div>
+                
+                <!-- Tournament Info -->
+                <div class="md:w-1/3 bg-gray-800 p-6 rounded-lg">
+                    <h1 class="text-2xl font-bold text-white mb-4">{{ $tournament->name }}</h1>
+                    
+                    <div class="space-y-4 text-gray-300">
+                        <div class="flex items-center">
+                            <i class="icofont-game-pad mr-2"></i>
+                            <span>{{ $tournament->game }}</span>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <i class="icofont-calendar mr-2"></i>
+                            <span>{{ $tournament->start_date->format('d/m/Y') }} - {{ $tournament->end_date->format('d/m/Y') }}</span>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <i class="icofont-users mr-2"></i>
+                            <span>{{ $tournament->participants_count }} participantes</span>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <i class="icofont-group mr-2"></i>
+                            <span>Máximo: {{ $tournament->max_participants }} participantes</span>
+                        </div>
+                        
+                        @auth
+                        <a href="#" class="block bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg mt-4">
+                            Inscrever-se
+                        </a>
+                        @else
+                        <a href="{{ route('login') }}" class="block bg-gray-600 hover:bg-gray-700 text-white text-center py-2 rounded-lg mt-4">
+                            Faça login para participar
+                        </a>
+                        @endauth
+                    </div>
+                </div>
             </div>
-		</div>
-	</section>
+            
+            <!-- Tournament Details -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6">
+                <h2 class="text-xl font-bold text-white mb-4">Descrição</h2>
+                <div class="prose prose-invert max-w-none">
+                    {!! nl2br(e($tournament->description)) !!}
+                </div>
+            </div>
+            
+            <!-- Tournament Rules -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h2 class="text-xl font-bold text-white mb-4">Regras</h2>
+                <div class="prose prose-invert max-w-none">
+                    <!-- You could add a 'rules' field to your tournaments table -->
+                    @if($tournament->rules)
+                        {!! nl2br(e($tournament->rules)) !!}
+                    @else
+                        <p class="text-gray-400">Regras padrão do torneio serão aplicadas.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </section>
+    
 	<!-- ===========Banner Section Ends Here========== -->
 
 
 
-        <!-- Login Section Starts Here -->
-    <div class="login-section padding-top padding-bottom">
-        <div class="container">
 
-            <!-- Success Message -->
-            @if(session('success'))
-                <div class="alert alert-success text-center">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-                <div class="account-wrapper">
-                    <h3 class="title">Login</h3>
-                    <form class="account-form" id="login-form" method="POST" action="{{ route('login') }}">
-                        @csrf <!-- Protects against CSRF attacks -->
-                
-                        <div class="form-group">
-                            <input type="text" placeholder="Usuário" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="password" placeholder="Senha" name="password" required>
-                        </div>
-                        <div class="form-group">
-                            <div class="d-flex justify-content-between flex-wrap pt-sm-2">
-                                <div class="checkgroup">
-                                    <input type="checkbox" name="remember" id="remember">
-                                    <label for="remember">Salvar login</label>
-                                </div>
-                                <a href="{{ route('password.request') }}">Esqueceu a senha?</a>
-                            </div>
-                        </div>
-                
-                        <!-- Display errors -->
-                        @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                
-                        <div class="form-group">
-                            <button type="submit" class="d-block default-button"><span>Entre Agora</span></button>
-                        </div>
-                
-                        <div class="form-group text-center">
-                            <p>Não tem uma conta? <a href="{{ route('register') }}">Registre-se</a></p>
-                        </div>                        
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-<!-- Login Section Ends Here -->
-
-
-    <script>
-        document.getElementById("show-register").addEventListener("click", function(event) {
-            event.preventDefault();
-            document.getElementById("login-form").style.display = "none";
-            document.getElementById("register-form").style.display = "block";
-        });
-    
-        document.getElementById("show-login").addEventListener("click", function(event) {
-            event.preventDefault();
-            document.getElementById("register-form").style.display = "none";
-            document.getElementById("login-form").style.display = "block";
-        });
-    </script>
-
-
-	<!-- ================ Footer Section start Here =============== -->
+    <!-- ================ footer Section start Here =============== -->
     <footer class="footer-section">
         <div class="footer-top">
             <div class="container">
@@ -302,11 +290,7 @@
                                     <img src="{{ asset("/images/footer/icons/03.png") }}" alt="location-icon">
                                 </div>
                                 <div class="lab-content">
-                                    <a href="https://www.google.com/maps/search/?api=1&query=Rua+Ariovaldo+Silveira+Franco,+567" 
-                                       target="_blank" 
-                                       style="text-decoration: none; color: inherit;">
-                                        Rua Ariovaldo Silveira Franco, 567
-                                    </a>
+                                    <span>Endereço : Ariovaldo Silveira Franco, 567</span>
                                 </div>
                             </div>
                         </div>
@@ -338,14 +322,7 @@
     </footer>
     <!-- ================ footer Section end Here =============== -->
 
-
-
-
-
-
-
-	<!-- All Needed JS -->
-	<script src="{{ asset("/js/vendor/jquery-3.6.0.min.js") }}"></script>
+    <script src="{{ asset("/js/vendor/jquery-3.6.0.min.js") }}"></script>
 	<script src="{{ asset("/js/vendor/modernizr-3.11.2.min.js") }}"></script>
 	<script src="{{ asset("/js/circularProgressBar.min.js") }}"></script>
 	<script src="{{ asset("/js/isotope.pkgd.min.js") }}"></script>
@@ -358,5 +335,4 @@
 	<script src="{{ asset("/js/main.js") }}"></script>
 
 </body>
-
 </html>

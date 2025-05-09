@@ -32,3 +32,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
 // Public Tournament Listing
 Route::get('/tournaments', [TournamentController::class, 'index'])
     ->name('tournaments.index');
+
+Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
