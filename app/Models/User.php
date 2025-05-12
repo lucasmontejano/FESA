@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'nickname',
+        'profile_picture',
+        'description',
     ];
 
     /**
@@ -52,6 +54,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tournament::class);
     }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class, 'team_members')->withPivot('role')->withTimestamps();
+    }
     
     /**
      * The attributes that should be appended to the model's array form.
@@ -61,5 +68,10 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->role === 'admin'; 
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'username';
     }
 }

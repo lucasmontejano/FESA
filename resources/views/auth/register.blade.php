@@ -205,7 +205,7 @@
             @endif
 
             <div class="account-wrapper">
-                <h3 class="title">Registrar</h3>
+                <h3 class="title">Cadastre-se</h3>
 
                 <form class="account-form" id="register-form" method="POST" action="{{ route('register') }}">
                     @csrf <!-- Protects against CSRF attacks -->
