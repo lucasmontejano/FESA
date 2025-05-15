@@ -51,4 +51,10 @@ class Team extends Model
     {
         return $this->members()->wherePivot('role', 'backup');
     }
+
+    // app/Models/Team.php
+    public function invites()
+    {
+        return $this->hasMany(TeamInvite::class);
+    }
 }

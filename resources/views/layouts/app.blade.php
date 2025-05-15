@@ -60,6 +60,7 @@
     <script src="{{ asset("/js/vendor/bootstrap.bundle.min.js") }}"></script>
     <script src="{{ asset("/js/plugins.js") }}"></script>
     <script src="{{ asset("/js/main.js") }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 
     @stack('scripts') <!-- Optional: for page-specific scripts -->
 </body>

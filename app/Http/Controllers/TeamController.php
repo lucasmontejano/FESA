@@ -6,9 +6,13 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\TeamInvite;
+use App\Models\User;
 
 class TeamController extends Controller
-{
+{   
+    use AuthorizesRequests;
     /**
      * Show the form for creating a new team.
      */
@@ -40,7 +44,7 @@ class TeamController extends Controller
         $team->save();
 
         // Add the leader as an active member of the team
-        $team->members()->attach(Auth::id(), ['role' => 'Titular']);
+        $team->members()->attach(Auth::id(), ['role' => 'active']);
 
         return redirect()->route('teams.show', $team->id)->with('success', 'Team created successfully!');
     }
@@ -52,27 +56,6 @@ class TeamController extends Controller
     {
         $team->load('leader', 'members'); // Eager load leader and members
         return view('teams.show', compact('team'));
-    }
-
-    /**
-     * Generate and display the invitation URL for the team leader.
-     */
-    public function generateInviteUrl(Team $team)
-    {
-        // Ensure the authenticated user is the team leader
-        if (Auth::id() !== $team->leader_id) {
-            abort(403);
-        }
-
-        // Generate a unique token for the invitation
-        $token = Str::random(32);
-
-        // You would typically store this token in the database with an expiration
-        // and associate it with the team. For this example, we'll just generate a URL.
-
-        $inviteUrl = route('teams.join', ['token' => $token]);
-
-        return view('teams.invite', compact('inviteUrl', 'team'));
     }
 
     /**
@@ -161,5 +144,61 @@ class TeamController extends Controller
         $team->members()->detach($member->id);
 
         return redirect()->route('teams.manage', $team->id)->with('success', 'Member removed successfully!');
+    }
+
+        // app/Http/Controllers/TeamController.php
+
+    public function generateInviteUrl(Team $team)
+    {
+        $this->authorize('update', $team); // Only team owners/admins can generate invites
+
+        // Delete any existing invites for this team
+        $team->invites()->delete();
+
+        $invite = TeamInvite::create([
+            'team_id' => $team->id,
+            'sender_id' => auth()->id(),
+            'token' => Str::random(32),
+            'expires_at' => now()->addDays(7) // 7 day expiry
+        ]);
+
+        return response()->json([
+            'url' => route('teams.showInvite', ['token' => $invite->token])
+        ]);
+    }
+
+
+    public function showInvite($token)
+    {
+        $invite = TeamInvite::where('token', $token)
+                    ->where('expires_at', '>', now())
+                    ->firstOrFail();
+
+        return view('teams.invite', compact('invite'));
+    }
+
+    public function acceptInvite($token)
+    {
+        $invite = TeamInvite::where('token', $token)
+                    ->where('expires_at', '>', now())
+                    ->firstOrFail();
+
+        // Check if user is already in team
+        if ($invite->team->members()->where('user_id', auth()->id())->exists()) {
+            return redirect()->route('teams.show', $invite->team)
+                ->with('error', 'You are already a member of this team');
+        }
+
+        // Add user to team
+        $invite->team->members()->attach(auth()->id(), [
+            'role' => 'member',
+            'joined_at' => now()
+        ]);
+
+        // Delete the used invite
+        $invite->delete();
+
+        return redirect()->route('teams.show', $invite->team)
+            ->with('success', 'You have joined the team!');
     }
 }

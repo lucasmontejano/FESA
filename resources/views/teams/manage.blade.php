@@ -50,10 +50,45 @@
 
             <div class="mt-4">
                 <a href="{{ route('teams.show', $team->id) }}" class="btn btn-primary">Back to Team Details</a>
-                 <a href="{{ route('teams.generateInviteUrl', $team->id) }}" class="btn btn-secondary">Generate Invite URL</a>
+                 <button onclick="generateInviteLink({{ $team->id }})" class="btn btn-secondary">
+                    Generate Invite URL
+                </button>
+            </div>
+            <div id="invite-link-container" style="display: none; margin-top: 10px;">
+                <label for="invite-link">Invite Link:</label>
+                <input type="text" id="invite-link" readonly style="width: 100%; padding: 5px;">
             </div>
         </div>
     </section>
                    
+    <script>
+        function generateInviteLink(teamId) {
+            fetch(`/teams/${teamId}/invite`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Request failed");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById('invite-link-container');
+                const input = document.getElementById('invite-link');
+                input.value = data.url;
+                container.style.display = 'block';
+            })
+            .catch(error => {
+                alert("Failed to generate invite. You may not have permission.");
+                console.error(error);
+            });
+        }
+    </script>
+
     <!-- -----Banner----- -->
 @endsection

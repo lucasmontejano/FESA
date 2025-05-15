@@ -56,3 +56,18 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/update-picture', [ProfileController::class, 'update'])->name('profile.updatePicture');
     Route::put('/profile/update-description', [ProfileController::class, 'update'])->name('profile.updateDescription');
 });
+
+Route::post('/teams/{team}/invite', [TeamController::class, 'generateInviteUrl'])
+    ->name('teams.generateInviteUrl')
+    ->middleware('auth');
+
+Route::get('/team-invite/{token}', [TeamController::class, 'showInvite'])
+    ->name('teams.showInvite');
+
+Route::post('/team-invite/{token}/accept', [TeamController::class, 'acceptInvite'])
+    ->name('teams.acceptInvite')
+    ->middleware('auth');
+
+    Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])
+    ->name('teams.updatePositions')
+    ->middleware('auth');

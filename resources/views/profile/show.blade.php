@@ -267,14 +267,14 @@
                     <input type="hidden" name="redirect_url" value="{{ url()->current() }}">
                     <textarea name="description" rows="4" style="width: 100%; padding: 10px; border-radius: 6px; background: #2a2e38; color: #fff; border: 1px solid #444;">{{ $user->description }}</textarea>
                     <div style="margin-top: 10px; display: flex; gap: 10px;">
-                        <button type="submit" class="btn-primary" style="padding: 8px 20px;">Salvar</button>
-                        <button type="button" onclick="toggleDescriptionEdit()" class="btn-secondary" style="padding: 8px 20px; background: #444; color: #fff;">Cancelar</button>
+                        <button type="submit" class="btn-primary" style="padding: 10px 24px; background-color: #4da6ff; border: none; border-radius: 6px; font-weight: 600;">Salvar</button>
+                        <button type="button" onclick="toggleDescriptionEdit()" class="btn-primary" style="padding: 10px 24px; background-color: #6c757d; color: #fff; border: none; border-radius: 6px; font-weight: 600;">Cancelar</button>
                     </div>
                 </form>
 
                 @auth
                     @if (Auth::id() === $user->id)
-                        <button onclick="toggleDescriptionEdit()" class="btn-primary" style="margin-top: 10px; padding: 8px 20px;">Editar Descrição</button>
+                        <button onclick="toggleDescriptionEdit()" class="btn-primary" style="margin-top: 10px; padding: 8px 20px; background-color: #4da6ff; border: none; border-radius: 6px; font-weight: 600;">Editar Descrição</button>
                     @endif
                 @endauth
             </div>
