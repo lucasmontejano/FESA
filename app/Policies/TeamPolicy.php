@@ -63,4 +63,9 @@ class TeamPolicy
     {
         return false;
     }
+
+    public function addMember(User $user, Team $team)
+{
+    return $team->canAddMember();
+}
 }

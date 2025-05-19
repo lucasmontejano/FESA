@@ -150,21 +150,65 @@ class TeamController extends Controller
 
     public function generateInviteUrl(Team $team)
     {
-        $this->authorize('update', $team); // Only team owners/admins can generate invites
+        $this->authorize('update', $team);
+        
+        if (!$team->canAddMember()) {
+            return response()->json(['error' => 'Team is full (max 7 players)'], 400);
+        }
 
-        // Delete any existing invites for this team
-        $team->invites()->delete();
-
-        $invite = TeamInvite::create([
-            'team_id' => $team->id,
-            'sender_id' => auth()->id(),
-            'token' => Str::random(32),
-            'expires_at' => now()->addDays(7) // 7 day expiry
-        ]);
+        $invite = TeamInvite::updateOrCreate(
+            [
+                'team_id' => $team->id,
+                'sender_id' => auth()->id()
+            ],
+            [
+                'token' => Str::random(32),
+                'expires_at' => now()->addDays(7),
+                'max_uses' => null, // Set to a number if you want to limit uses
+                'uses' => 0
+            ]
+        );
 
         return response()->json([
-            'url' => route('teams.showInvite', ['token' => $invite->token])
+            'url' => route('teams.acceptInvite', $invite->token),
+            'expires' => $invite->expires_at->diffForHumans()
         ]);
+    }
+
+    public function acceptInvite($token)
+    {
+        $invite = TeamInvite::where('token', $token)
+                ->where('expires_at', '>', now())
+                ->firstOrFail();
+
+        if (!$invite->isValid()) {
+            return redirect()->route('teams.index')
+                ->with('error', 'Invite is no longer valid or team is full');
+        }
+
+        if ($invite->team->members()->where('user_id', auth()->id())->exists()) {
+            return redirect()->route('teams.show', $invite->team)
+                ->with('info', 'You are already a member of this team');
+        }
+
+        // Determine role
+        $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
+
+        // Add user to team
+        $invite->team->members()->attach(auth()->id(), [
+            'role' => $role,
+            'joined_at' => now()
+        ]);
+
+        $invite->increment('uses');
+        
+        // Only delete if we've reached max uses (if set)
+        if ($invite->max_uses && $invite->uses >= $invite->max_uses) {
+            $invite->delete();
+        }
+
+        return redirect()->route('teams.show', $invite->team)
+            ->with('success', "You have joined the team as {$role}!");
     }
 
 
@@ -177,28 +221,19 @@ class TeamController extends Controller
         return view('teams.invite', compact('invite'));
     }
 
-    public function acceptInvite($token)
-    {
-        $invite = TeamInvite::where('token', $token)
-                    ->where('expires_at', '>', now())
-                    ->firstOrFail();
-
-        // Check if user is already in team
-        if ($invite->team->members()->where('user_id', auth()->id())->exists()) {
-            return redirect()->route('teams.show', $invite->team)
-                ->with('error', 'You are already a member of this team');
-        }
-
-        // Add user to team
-        $invite->team->members()->attach(auth()->id(), [
-            'role' => 'member',
-            'joined_at' => now()
-        ]);
-
-        // Delete the used invite
-        $invite->delete();
-
-        return redirect()->route('teams.show', $invite->team)
-            ->with('success', 'You have joined the team!');
-    }
+    public function updatePositions(Request $request, Team $team)
+{
+    $this->authorize('update', $team);
+    
+    $memberIds = $request->input('member_ids');
+    
+    // Update all members to backup first
+    $team->members()->updateExistingPivot($memberIds, ['role' => 'backup']);
+    
+    // Update first 4 members to active
+    $activeMembers = array_slice($memberIds, 0, 4);
+    $team->members()->updateExistingPivot($activeMembers, ['role' => 'active']);
+    
+    return response()->json(['success' => true]);
+}
 }

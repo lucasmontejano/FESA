@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+
+@if(!$invite->isValid())
+    <div class="alert alert-danger">
+        This invite is no longer valid or the team is full
+    </div>
+@endif
+
 <div class="container py-5" style="padding-top: 100px;">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">

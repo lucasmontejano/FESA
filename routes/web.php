@@ -37,6 +37,9 @@ Route::get('/tournaments', [TournamentController::class, 'index'])
     ->name('tournaments.index');
 
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
+Route::put('/tournaments/{tournament}', [TournamentController::class, 'update'])->name('tournaments.update');
+Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
+
 
 // Team Routes
 Route::middleware(['auth'])->group(function () {
@@ -64,10 +67,10 @@ Route::post('/teams/{team}/invite', [TeamController::class, 'generateInviteUrl']
 Route::get('/team-invite/{token}', [TeamController::class, 'showInvite'])
     ->name('teams.showInvite');
 
-Route::post('/team-invite/{token}/accept', [TeamController::class, 'acceptInvite'])
+Route::post('/team-invite/{token}', [TeamController::class, 'acceptInvite'])
     ->name('teams.acceptInvite')
     ->middleware('auth');
 
-    Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])
+Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])
     ->name('teams.updatePositions')
     ->middleware('auth');

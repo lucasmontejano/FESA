@@ -1,179 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Torneios</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- All stylesheet and icons css  -->
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/animate.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/icofont.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/swiper.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/lightcase.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/style.min.css') }}">
+@extends('layouts.app')
 
-</head>
+@section('title', 'Torneio: ' . $tournament->name)
 
+@section('content')
 
-<body>
-	<!-- preloader start here -->
-    <div class="preloader">
-        <div class="preloader-inner">
-            <div class="preloader-icon">
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </div>
-	<!-- preloader ending here -->
-
-	<!-- scrollToTop start here -->
-    <a href="{{ url("#") }}" class="scrollToTop"><i class="icofont-rounded-up"></i></a>
-    <!-- scrollToTop ending here -->
-
-	<!-- ==========shape image Starts Here========== -->
-	<div class="body-shape">
-		<img src="{{ asset("/images/shape/body-shape.png") }}" alt="shape">
-	</div>
-	<!-- ==========shape image end Here========== -->
-
-
-
-
-	<!-- ==========Header Section Starts Here========== -->
-	<header class="header-section">
-        <div class="container">
-            <div class="header-holder d-flex flex-wrap justify-content-between align-items-center">
-                <div class="brand-logo d-none d-lg-inline-block">
-                    <div class="logo">
-                        <a href="{{ url("index.html") }}">
-                            <img src="{{ asset("/images/logo/logo.png") }}" alt="logo" style="width: 160px; height: auto;">
-                        </a>
-                    </div>
-                </div>
-                <div class="header-menu-part">
-                    <div class="header-bottom">
-                        <div class="header-wrapper justify-content-lg-end">
-                            <div class="mobile-logo d-lg-none">
-                                <a href="{{ url("index.html") }}"><img src="{{ asset("/images/logo/logo.png") }}" alt="logo"></a>
-                            </div>
-                            <div class="menu-area">
-                                <ul class="menu">
-                                    <li><a href="{{ url("index.html") }}">Home</a></li>
-    
-                                    <li>
-                                        <a href="{{ url("#0") }}">Features</a>
-                                        <ul class="submenu">
-                                            <li><a href="{{ url("about.html") }}">About</a></li>
-                                            <li><a href="{{ url("gallery.html") }}">Gallery</a></li>
-                                            <li>
-                                                <a href="{{ url("#0") }}">Games</a>
-                                                <ul class="submenu">
-                                                    <li><a href="{{ url("game-list.html") }}">Game List 1</a></li>
-                                                    <li><a href="{{ url("game-list2.html") }}">Game List 2</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="{{ url("partners.html") }}">Partners</a></li>
-                                            <li>
-                                                <a href="{{ url("#0") }}">Teams</a>
-                                                <ul class="submenu">
-                                                    <li><a href="{{ url("team.html") }}">Team</a></li>
-                                                    <li><a href="{{ url("team-single.html") }}">Team Single</a></li>
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="{{ url("#0") }}" class="active">Accounts</a>
-                                                <ul class="submenu">
-                                                    @guest
-                                                        <li><a href="{{ route('login') }}" class="active">Login</a></li>
-                                                        <li><a href="{{ route('register') }}">Sign Up</a></li>
-                                                    @endguest
-                                                    @auth
-                                                        <li><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                                                        <li>
-                                                            <form method="POST" action="{{ route('logout') }}">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-link" style="padding: 0; border: none; background: none; color: inherit;">
-                                                                    Logout
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    @endauth
-                                                </ul>
-                                            </li>
-                                            <li>
-                                                <a href="{{ url("#0") }}">Shop</a>
-                                                <ul class="submenu">
-                                                    <li><a href="{{ url("shop.html") }}">Shop</a></li>
-                                                    <li><a href="{{ url("shop-single.html") }}">Shop Details</a></li>
-                                                    <li><a href="{{ url("cart-page.html") }}">Cart Page</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="{{ url("404.html") }}">404 Page</a></li>
-                                        </ul>
-                                    </li>
-    
-                                    <li><a href="{{ url("achievements.html") }}">Achievement</a></li>
-    
-                                    <li>
-                                        <a href="{{ url("#0") }}">Blog</a>
-                                        <ul class="submenu">
-                                            <li><a href="{{ url("blog.html") }}">Blog</a></li>
-                                            <li><a href="{{ url("blog-2.html") }}">Blog 2</a></li>
-                                            <li><a href="{{ url("blog-single.html") }}">Blog Single</a></li>
-                                        </ul>
-                                    </li>
-    
-                                    <li><a href="{{ url("contact.html") }}">Contact</a></li>
-                                </ul>
-    
-                                <!-- Login and Signup Buttons -->
-                                @guest
-                                    <a href="{{ route('login') }}" class="login">
-                                        <i class="icofont-user"></i> <span>Login</span>
-                                    </a>
-                                    <a href="{{ route('register') }}" class="signup">
-                                        <i class="icofont-users"></i> <span>Cadastre-se</span>
-                                    </a>
-                                @endguest
-    
-                                @auth
-                                    <a href="{{ route('dashboard') }}" class="login">
-                                        <i class="icofont-ui-home"></i> <span>Dashboard</span>
-                                    </a>
-                                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                                        @csrf
-                                        <button type="submit" class="signup" style="background: none; border: none; color: inherit;">
-                                            <i class="icofont-logout"></i> <span>Logout</span>
-                                        </button>
-                                    </form>
-                                @endauth
-    
-                                <!-- toggle icons -->
-                                <div class="header-bar d-lg-none">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                                <div class="ellepsis-bar d-lg-none">
-                                    <i class="icofont-info-square"></i>
-                                </div>
-                            </div> 
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-    
-	<!-- ==========Header Section Ends Here========== -->
-    
-
-
-    <!-- ===========Banner Section start Here========== -->
+    <style>
+        [x-cloak] {
+        display: none !important;
+    }
+    </style>
 
     <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
         <div class="container mx-auto py-8">
@@ -182,9 +17,11 @@
                 <!-- Tournament Banner -->
                 <div class="md:w-2/3">
                     @if($tournament->banner)
-                    <img src="{{ url('storage/' . $tournament->banner) }}" 
-                        alt="{{ $tournament->name }} Banner"
-                        class="w-full h-64 md:h-96 object-cover rounded-lg">
+                        <div class="w-full h-96 overflow-hidden rounded-t-lg">
+                            <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}" 
+                                alt="{{ $tournament->name }} Banner"
+                                class="w-full h-full object-cover">
+                        </div>
                     @endif
                 </div>
                 
@@ -196,11 +33,6 @@
                         <div class="flex items-center">
                             <i class="icofont-game-pad mr-2"></i>
                             <span>{{ $tournament->game }}</span>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <i class="icofont-calendar mr-2"></i>
-                            <span>{{ $tournament->start_date->format('d/m/Y') }} - {{ $tournament->end_date->format('d/m/Y') }}</span>
                         </div>
                         
                         <div class="flex items-center">
@@ -222,117 +54,146 @@
                             Faça login para participar
                         </a>
                         @endauth
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tournament Details -->
-            <div class="bg-gray-800 rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-bold text-white mb-4">Descrição</h2>
-                <div class="prose prose-invert max-w-none">
-                    {!! nl2br(e($tournament->description)) !!}
-                </div>
-            </div>
-            
-            <!-- Tournament Rules -->
-            <div class="bg-gray-800 rounded-lg p-6">
-                <h2 class="text-xl font-bold text-white mb-4">Regras</h2>
-                <div class="prose prose-invert max-w-none">
-                    <!-- You could add a 'rules' field to your tournaments table -->
-                    @if($tournament->rules)
-                        {!! nl2br(e($tournament->rules)) !!}
-                    @else
-                        <p class="text-gray-400">Regras padrão do torneio serão aplicadas.</p>
+                        @if (auth()->check() && auth()->id() === $tournament->user_id)
+                        <div class="flex justify-end mb-4 space-x-2">
+                            <button @click="editing = true"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                Editar Torneio
+                            </button>
+
+                            <form action="{{ route('tournaments.destroy', $tournament) }}" method="POST"
+                                onsubmit="return confirm('Tem certeza que deseja excluir este torneio?');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition">
+                                    Excluir Torneio
+                                </button>
+                            </form>
+                        </div>
+
+                            <div x-data="{ editing: false }">
+                            <!-- Modal de Edição -->
+                            <div x-show="editing" x-cloak class="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center">
+                                <div class="bg-gray-900 text-white rounded-lg shadow-lg p-6 w-full max-w-3xl">
+                                    <h2 class="text-xl font-bold mb-4">Editar Torneio</h2>
+
+                                    <form action="{{ route('tournaments.update', $tournament) }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        @method('PUT')
+
+                                        <div class="space-y-4">
+
+                                            <div>
+                                                <label class="block mb-1">Nome do Torneio</label>
+                                                <input type="text" name="name" value="{{ $tournament->name }}"
+                                                    class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">
+                                            </div>
+
+                                            <div>
+                                                <label class="block mb-1">Descrição</label>
+                                                <textarea name="description" rows="3"
+                                                        class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">{{ $tournament->description }}</textarea>
+                                            </div>
+
+                                            <div>
+                                                <label class="block mb-1">Regras</label>
+                                                <textarea name="rules" rows="4"
+                                                        class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">{{ $tournament->rules }}</textarea>
+                                            </div>
+
+                                            <div>
+                                                <label class="block mb-1">Premiação</label>
+                                                <textarea name="prizes" rows="3"
+                                                        class="w-full rounded bg-gray-800 border border-gray-700 px-3 py-2 text-white">{{ $tournament->prizes }}</textarea>
+                                            </div>
+
+                                            <div>
+                                                <label class="block mb-1">Banner</label>
+                                                <label class="block cursor-pointer w-full">
+                                                    <input type="file" name="banner" class="hidden" onchange="this.closest('label').nextElementSibling.src = window.URL.createObjectURL(this.files[0])">
+                                                    <div class="border border-gray-700 rounded p-2 w-full text-center bg-gray-800 hover:bg-gray-700 transition">Clique para trocar a imagem</div>
+                                                </label>
+                                                <img src="{{ asset('storage/' . $tournament->banner) }}"
+                                                    alt="Banner atual" class="mt-2 rounded max-h-48 object-cover w-full">
+                                            </div>
+
+                                        </div>
+
+                                        <div class="mt-6 flex justify-between">
+                                            <button type="button" @click="editing = false"
+                                                    class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">
+                                                Cancelar
+                                            </button>
+                                            <button type="submit"
+                                                    class="px-4 py-2 bg-green-600 rounded hover:bg-green-700">
+                                                Salvar Alterações
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @endif
+                    </div>
                 </div>
             </div>
+
+            <!-- Tabs Wrapper -->
+    <div x-data="{ tab: 'details' }" class="bg-gray-900 p-6 rounded-lg">
+
+        <!-- Tabs Buttons -->
+        <div class="flex border-b border-gray-700 mb-6 space-x-4">
+            <button @click="tab = 'details'" :class="tab === 'details' ? 'border-b-2 border-white text-white' : 'text-gray-400'" class="pb-2 px-4 focus:outline-none">
+                DETALHES
+            </button>
+            <button @click="tab = 'rules'" :class="tab === 'rules' ? 'border-b-2 border-white text-white' : 'text-gray-400'" class="pb-2 px-4 focus:outline-none">
+                REGRAS
+            </button>
+            <button @click="tab = 'prizes'" :class="tab === 'prizes' ? 'border-b-2 border-white text-white' : 'text-gray-400'" class="pb-2 px-4 focus:outline-none">
+                PREMIAÇÕES
+            </button>
+            <button @click="tab = 'contact'" :class="tab === 'contact' ? 'border-b-2 border-white text-white' : 'text-gray-400'" class="pb-2 px-4 focus:outline-none">
+                DÚVIDAS
+            </button>
         </div>
+
+        <!-- Tab Contents -->
+        <div x-show="tab === 'details'" class="text-gray-300 space-y-4">
+            <h2 class="text-xl font-bold text-white">JOGO</h2>
+            <p>{{ $tournament->game }}</p>
+
+            <h2 class="text-xl font-bold text-white mt-6">DATA</h2>
+            <p>{{ $tournament->start_date->format('l, F jS Y') }}</p>
+            <p>{{ $tournament->start_date->format('g:i A T') }}</p>
+
+            <h2 class="text-xl font-bold text-white mt-6">Format</h2>
+            <p>{{ $tournament->format }}</p>
+            <p>Pre-Made Team & Free Agent Registrations are allowed</p>
+
+            <h2 class="text-xl font-bold text-white mt-6">Game Map & Type</h2>
+            <p>{{ $tournament->map ?? 'Summoners Rift' }}</p>
+            <p>{{ $tournament->type ?? 'Tournament Draft' }}</p>
+        </div>
+
+        <div x-show="tab === 'rules'" x-cloak class="text-gray-300 space-y-4">
+            <h2 class="text-xl font-bold text-white mb-2">Regras</h2>
+            <div class="prose prose-invert max-w-none">
+                {!! nl2br(e($tournament->rules)) !!}
+            </div>
+        </div>
+
+        <div x-show="tab === 'prizes'" x-cloak class="text-gray-300 space-y-4">
+            <h2 class="text-xl font-bold text-white mb-2">Premiação</h2>
+            <div class="prose prose-invert max-w-none">
+                {!! nl2br(e($tournament->prizes)) !!}
+            </div>
+        </div>
+
+        <div x-show="tab === 'contact'" x-cloak class="text-gray-300">
+            <p>Para mais informações, entre em contato com a organização do evento.</p>
+        </div>
+
+    </div>
+
     </section>
-    
-	<!-- ===========Banner Section Ends Here========== -->
-
-
-
-
-    <!-- ================ footer Section start Here =============== -->
-    <footer class="footer-section">
-        <div class="footer-top">
-            <div class="container">
-                <div class="row g-3 justify-content-center g-lg-0">
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="footer-top-item lab-item">
-                            <div class="lab-inner">
-                                <div class="lab-thumb">
-                                    <img src="{{ asset("/images/footer/icons/01.png") }}" alt="Phone-icon">
-                                </div>
-                                <div class="lab-content">
-                                    <span>Telefone : +55 (19) 3806-2181</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="footer-top-item lab-item">
-                            <div class="lab-inner">
-                                <div class="lab-thumb">
-                                    <img src="{{ asset("/images/footer/icons/02.png") }}" alt="email-icon">
-                                </div>
-                                <div class="lab-content">
-                                    <span>Email : lucas.zibordi@fatec.sp.gov.br</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 col-12">
-                        <div class="footer-top-item lab-item">
-                            <div class="lab-inner">
-                                <div class="lab-thumb">
-                                    <img src="{{ asset("/images/footer/icons/03.png") }}" alt="location-icon">
-                                </div>
-                                <div class="lab-content">
-                                    <span>Endereço : Ariovaldo Silveira Franco, 567</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="footer-middle padding-top padding-bottom" style="background-image: url(images/footer/bg.jpg);">
-            <div class="container">
-                <div class="row justify-content-center text-center padding-lg-top"> <!-- Centered Content -->
-                    <div class="col-lg-4 col-md-6 col-12">
-                        <div class="footer-middle-item-wrapper">
-                            <div class="footer-middle-item mb-lg-0">
-                                <div class="fm-item-title mb-4">
-                                    <img src="{{ asset('/images/logo/logo-footer.png') }}" alt="logo-footer" style="width: 1000px; height: auto;">
-                                </div>
-                                <div class="fm-item-content">
-                                    <p class="mb-4">
-                                        Projeto desenvolvido para o trabalho de conclusão de curso, do curso de Análise e Desenvolvimento de Sistemas da FATEC Mogi Mirim.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-    </footer>
-    <!-- ================ footer Section end Here =============== -->
-
-    <script src="{{ asset("/js/vendor/jquery-3.6.0.min.js") }}"></script>
-	<script src="{{ asset("/js/vendor/modernizr-3.11.2.min.js") }}"></script>
-	<script src="{{ asset("/js/circularProgressBar.min.js") }}"></script>
-	<script src="{{ asset("/js/isotope.pkgd.min.js") }}"></script>
-	<script src="{{ asset("/js/swiper.min.js") }}"></script>
-	<script src="{{ asset("/js/lightcase.js") }}"></script>
-	<script src="{{ asset("/js/waypoints.min.js") }}"></script>
-	<script src="{{ asset("/js/wow.min.js") }}"></script>
-	<script src="{{ asset("/js/vendor/bootstrap.bundle.min.js") }}"></script>
-	<script src="{{ asset("/js/plugins.js") }}"></script>
-	<script src="{{ asset("/js/main.js") }}"></script>
-
-</body>
-</html>
+@endsection

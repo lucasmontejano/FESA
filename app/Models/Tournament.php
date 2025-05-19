@@ -16,7 +16,11 @@ class Tournament extends Model
         'user_id', 
         'game', 
         'start_date', 
-        'end_date', 
+        'end_date',
+        'tournament_date',
+        'time',
+        'rules',
+        'prizes',
         'banner',
     ];
 

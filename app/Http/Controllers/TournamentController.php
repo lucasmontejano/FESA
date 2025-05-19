@@ -69,6 +69,7 @@ class TournamentController extends Controller
                     }
                 }
             ],
+            'time' => 'required|date_format:H:i',
             'participant_option' => 'required|in:preset,custom',
             'max_participants' => [
                 'required',
@@ -83,7 +84,9 @@ class TournamentController extends Controller
                 },
             ],
             'description' => 'nullable|string',
-            'banner' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'rules' => 'nullable|string',
+            'prize' => 'nullable|string',
+            'banner' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if (!auth()->check() || !auth()->user()->isAdmin()) {
@@ -100,8 +103,11 @@ class TournamentController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'tournament_date' => $validated['tournament_date'],
+            'time' => $validated['time'],
             'max_participants' => $validated['max_participants'],
             'description' => $validated['description'],
+            'rules' => $validated['rules'],
+            'prize' => $validated['prize'],
             'banner' => $bannerPath,
             'user_id' => auth()->id(),
         ]);
@@ -206,14 +212,13 @@ class TournamentController extends Controller
         ];
 
         if ($request->hasFile('banner')) {
-            // Delete old banner
             Storage::disk('public')->delete($tournament->banner);
             $data['banner'] = $request->file('banner')->store('tournament_banners', 'public');
         }
 
         $tournament->update($data);
 
-        return redirect()->route('tournaments.index')
+        return redirect()->route('dashboard')
                         ->with('success', 'Tournament updated successfully!');
     }
 
@@ -233,7 +238,7 @@ class TournamentController extends Controller
         
         $tournament->delete();
 
-        return redirect()->route('tournaments.index')
+        return redirect()->route('dashboard')
                         ->with('success', 'Tournament deleted successfully!');
     }
 }

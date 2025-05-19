@@ -33,7 +33,10 @@ class Team extends Model
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'team_members')->withPivot('role');
+        return $this->belongsToMany(User::class, table: 'team_members')
+                    ->withPivot(['role', 'joined_at'])
+                    ->orderByPivot('role') // Default ordering
+                    ->orderByPivot('joined_at');
     }
 
     /**
@@ -41,7 +44,18 @@ class Team extends Model
      */
     public function activeMembers()
     {
-        return $this->members()->wherePivot('role', 'active');
+        return $this->belongsToMany(User::class, table: 'team_members')
+                    ->wherePivot('role', 'active');
+    }
+
+    public function canAddMember()
+    {
+        return $this->members()->count() < 7;
+    }
+
+    public function canAddActiveMember()
+    {
+        return $this->activeMembers()->count() < 5; // Leader + 4 active = 5 total
     }
 
     /**

@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Meus Torneios')</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <link  href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet"/>
+    <script src="https://unpkg.com/cropperjs"></script>
+
+
     
     <!-- All stylesheet and icons css  -->
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
@@ -14,6 +20,7 @@
     <link rel="stylesheet" href="{{ asset('css/lightcase.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/style.min.css') }}">
+    
 
     @stack('styles') <!-- Optional: for page-specific styles -->
 </head>
@@ -60,7 +67,6 @@
     <script src="{{ asset("/js/vendor/bootstrap.bundle.min.js") }}"></script>
     <script src="{{ asset("/js/plugins.js") }}"></script>
     <script src="{{ asset("/js/main.js") }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 
     @stack('scripts') <!-- Optional: for page-specific scripts -->
 </body>

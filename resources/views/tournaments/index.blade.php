@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Meus Torneios')
+
 @section('content')
 <div class="container">
     <h1>All Tournaments</h1>
