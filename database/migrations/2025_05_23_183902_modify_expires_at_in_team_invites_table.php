@@ -11,11 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tournaments', function (Blueprint $table) {
-            $table->time('time')
-                  ->after('tournament_date')
-                  ->comment('A hora que o torneio começa');
-        });
+        DB::statement("ALTER TABLE `team_invites` CHANGE COLUMN `expires_at` `expires_at` TIMESTAMP NOT NULL");
     }
 
     /**
@@ -23,8 +19,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tournaments', function (Blueprint $table) {
-            $table->dropColumn('time');
+        Schema::table('team_invites', function (Blueprint $table) {
+            //    
         });
     }
 };

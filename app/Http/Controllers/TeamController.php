@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\TeamInvite;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class TeamController extends Controller
 {   
@@ -131,85 +132,132 @@ class TeamController extends Controller
      */
     public function removeMember(Team $team, User $member)
     {
-        // Ensure the authenticated user is the team leader
-        if (Auth::id() !== $team->leader_id) {
-            abort(403);
+        $this->authorize('removeMember', [$team, $member]); // $member aqui é $memberToRemove
+
+        // 2. Prevenir que o líder se remova por este método
+        if ($member->id === $team->leader_id) {
+            return back()->with('error', 'O líder não pode ser removido desta forma. Considere transferir a liderança ou usar outra opção para gerenciar a equipe.');
         }
 
-        // Prevent the leader from removing themselves
-        if (Auth::id() === $member->id) {
-            return redirect()->route('teams.manage', $team->id)->with('error', 'You cannot remove yourself from the team.');
+        // 3. Verificar se o usuário é realmente membro da equipe (redundante se o frontend só mostra membros)
+        if (!$team->members()->where('user_id', $member->id)->exists()) {
+            return back()->with('error', 'Este usuário não é membro desta equipe ou já foi removido.');
         }
 
-        $team->members()->detach($member->id);
+        // 4. Remover (desanexar) o membro da equipe
+        try {
+            // A relação 'members' no seu modelo Team é usada aqui
+            $team->members()->detach($member->id);
 
-        return redirect()->route('teams.manage', $team->id)->with('success', 'Member removed successfully!');
+            // Você pode querer adicionar lógica aqui para, por exemplo,
+            // promover um membro reserva para ativo se um ativo for removido,
+            // ou limpar convites pendentes para este usuário nesta equipe, etc.
+            // Por enquanto, vamos manter simples.
+
+            return back()->with('success', $member->name . ' foi removido(a) da equipe com sucesso.');
+
+        } catch (\Exception $e) {
+            Log::error("Erro ao remover membro ID {$member->id} da equipe ID {$team->id}: " . $e->getMessage());
+            return back()->with('error', 'Ocorreu um erro ao tentar remover o membro. Por favor, tente novamente.');
+        }
     }
-
-        // app/Http/Controllers/TeamController.php
 
     public function generateInviteUrl(Team $team)
     {
-        $this->authorize('update', $team);
-        
+        $this->authorize('update', $team); // Good: Authorize first
+    
+        // Check if team is full before generating a new link
         if (!$team->canAddMember()) {
-            return response()->json(['error' => 'Team is full (max 7 players)'], 400);
+            return response()->json(['message' => 'A equipe está cheia e não pode aceitar novos membros no momento.'], 400);
         }
 
-        $invite = TeamInvite::updateOrCreate(
+        $invite = TeamInvite::updateOrCreate( // Assuming TeamInvite model exists
             [
                 'team_id' => $team->id,
                 'sender_id' => auth()->id()
             ],
             [
-                'token' => Str::random(32),
-                'expires_at' => now()->addDays(7),
-                'max_uses' => null, // Set to a number if you want to limit uses
-                'uses' => 0
+                'token' => Str::random(32), // Generate a new token
+                'expires_at' => now()->addDays(7), // Or now()->addHours(24) if you prefer 24hr expiry
+                'max_uses' => 6,  // <<< Set max uses to 6
+                'uses' => 0       // <<< Reset current uses to 0
             ]
         );
 
         return response()->json([
             'url' => route('teams.acceptInvite', $invite->token),
-            'expires' => $invite->expires_at->diffForHumans()
+            'expires' => $invite->expires_at->diffForHumans(), // "in 7 days", "in 24 hours"
+            'max_uses' => $invite->max_uses,
+            'uses_left' => $invite->max_uses - $invite->uses // Will be 6 for a new/refreshed link
         ]);
     }
 
-    public function acceptInvite($token)
-    {
-        $invite = TeamInvite::where('token', $token)
-                ->where('expires_at', '>', now())
-                ->firstOrFail();
+public function acceptInvite($token)
+{
+    Log::info("--- Início do Processo de Aceitar Convite --- Token: {$token}");
+    $invite = TeamInvite::where('token', $token)
+                                  // ->where('expires_at', '>', now()) // Vamos remover este where temporariamente para logging
+                                  ->with('team')
+                                  ->first();
 
-        if (!$invite->isValid()) {
-            return redirect()->route('teams.index')
-                ->with('error', 'Invite is no longer valid or team is full');
-        }
-
-        if ($invite->team->members()->where('user_id', auth()->id())->exists()) {
-            return redirect()->route('teams.show', $invite->team)
-                ->with('info', 'You are already a member of this team');
-        }
-
-        // Determine role
-        $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
-
-        // Add user to team
-        $invite->team->members()->attach(auth()->id(), [
-            'role' => $role,
-            'joined_at' => now()
-        ]);
-
-        $invite->increment('uses');
-        
-        // Only delete if we've reached max uses (if set)
-        if ($invite->max_uses && $invite->uses >= $invite->max_uses) {
-            $invite->delete();
-        }
-
-        return redirect()->route('teams.show', $invite->team)
-            ->with('success', "You have joined the team as {$role}!");
+    if (!$invite) {
+        Log::error("[Accept Invite] Convite NÃO ENCONTRADO no BD para o Token: {$token}. Query executada (aproximada): TeamInvite::where('token', '{$token}')->first()");
+        return redirect()->route('teams.index')->with('error', 'Link de convite inválido.');
     }
+
+    // Log do estado inicial do convite encontrado
+    Log::info("[Accept Invite] Convite ID {$invite->id} ENCONTRADO. Expires At ATUAL: " . $invite->expires_at->toIso8601String() . ", Uses: {$invite->uses}, MaxUses: {$invite->max_uses}");
+
+    // Agora, faça as verificações que antes estavam na query ou no método isValid()
+    if ($invite->expires_at->isPast()) {
+        Log::warning("[Accept Invite] Convite ID {$invite->id} está EXPIRADO. Expires At: {$invite->expires_at->toIso8601String()}, Hora Atual: " . now()->toIso8601String());
+        return redirect()->route('teams.index')->with('error', 'Este link de convite expirou.');
+    }
+
+    if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
+        Log::warning("[Accept Invite] Convite ID {$invite->id} atingiu o MÁXIMO DE USOS. Uses: {$invite->uses}, MaxUses: {$invite->max_uses}");
+        return redirect()->route('teams.index')->with('error', 'Este link de convite já atingiu o número máximo de usos.');
+    }
+
+    // ... (suas outras verificações: if (!$invite->team || !$invite->team->canAddMember()), if ($invite->team->members()->where('user_id', auth()->id())->exists())) ...
+    // Adicione logs dentro dessas verificações também se necessário
+
+    // Se todas as verificações passarem:
+    $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
+    $invite->team->members()->attach(auth()->id(), [
+        'role' => $role,
+        'joined_at' => now()
+    ]);
+    Log::info("[Accept Invite] Membro ID " . auth()->id() . " adicionado à equipe ID {$invite->team_id} como {$role}.");
+
+    // Guarde o valor de expires_at ANTES de incrementar 'uses'
+    $expiresAtBeforeIncrement = $invite->expires_at->toIso8601String();
+    Log::info("[Accept Invite] Invite ID {$invite->id} - expires_at ANTES do increment: " . $expiresAtBeforeIncrement);
+
+    //$invite->increment('uses'); // Esta é a operação que atualiza o banco
+    $invite->uses = $invite->uses + 1;
+    $invite->timestamps = false; // Para evitar que updated_at seja modificado por este save
+    $invite->save(['touch' => false]); // Salva sem disparar eventos de toque e sem atualizar timestamps
+    $invite->timestamps = true; // Reabilita
+
+    // CRUCIAL: Recarregue o modelo do banco de dados para ver o estado REAL após o increment
+    $invite->refresh();
+    Log::info("[Accept Invite] Invite ID {$invite->id} - expires_at DEPOIS do increment e refresh: " . $invite->expires_at->toIso8601String() . ". Uses ATUAL: " . $invite->uses);
+
+    // Verifique se mudou
+    if ($invite->expires_at->toIso8601String() !== $expiresAtBeforeIncrement) {
+        Log::critical("[Accept Invite] Invite ID {$invite->id} - ATENÇÃO: expires_at FOI ALTERADO INESPERADAMENTE! Antes: {$expiresAtBeforeIncrement}, Depois: " . $invite->expires_at->toIso8601String());
+    }
+
+    if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
+        Log::info("[Accept Invite] Invite ID {$invite->id} atingiu o limite de usos e será deletado. Uses: {$invite->uses}");
+        // $invite->delete(); // Comente temporariamente para inspeção no BD
+    }
+
+    Log::info("--- Fim do Processo de Aceitar Convite --- Token: {$token}");
+    return redirect()->route('teams.show', $invite->team_id)
+        ->with('success', "Você entrou na equipe '{$invite->team->name}' como {$role}!");
+}
 
 
     public function showInvite($token)

@@ -230,6 +230,60 @@
             grid-template-columns: 1fr;
         }
     }
+
+    .btn-create-team {
+    background-color: #4da6ff; /* Primary blue from your theme */
+    color: white;
+    border: none;
+    padding: 8px 16px;       /* Adjust padding as needed */
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-size: 0.9em;         /* Slightly smaller or adjust to match design */
+}
+
+.btn-create-team:hover {
+    background-color: #3a8ad9; /* Darker blue on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(77, 166, 255, 0.2); /* Consistent shadow effect */
+}
+
+/* Ensure section-title style is as you expect (from your existing styles) */
+.section-title {
+    font-size: 24px;
+    /* margin-bottom: 20px; -- This is now handled by the parent flex div */
+    color: #fff;
+    border-bottom: 2px solid #4da6ff;
+    padding-bottom: 10px;
+    display: inline-block; /* This property remains if you want the border only under the text */
+}
+
+/* Optional: Styles for team items if not already present (adjust as needed) */
+.team-item {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Adds space between photo and info */
+}
+
+.team-photo {
+    width: 50px; /* Or your preferred size */
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover; /* Ensures the image covers the area without distortion */
+}
+
+.team-info a {
+    /* Your existing styles for team links */
+    font-weight: 600; /* Ensure this is applied */
+}
+
+.team-info span {
+    /* Your existing styles for role info */
+    font-size: 0.9em; /* Ensure this is applied */
+    color: #aaa; /* Ensure this is applied */
+}
 </style>
 
 <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
@@ -282,38 +336,47 @@
 
         {{-- Tab Navigation --}}
         <div class="tab-navigation">
-            <button class="tab-link active" data-tab="tournaments">Tournaments</button>
-            <button class="tab-link" data-tab="teams">Teams</button>
+            <button class="tab-link {{ $activeTab === 'teams' ? 'active' : '' }}" data-tab="teams">Meus Times</button>
+            <button class="tab-link {{ $activeTab === 'tournaments' ? 'active' : '' }}" data-tab="tournaments">Torneios</button>
         </div>
 
         {{-- Tournaments Tab --}}
-        <div id="tournaments" class="tab-section active">
-            <h3 class="section-title">My Tournaments</h3>
-            <ul class="list-block">
-                {{-- Replace with actual tournament loop --}}
-                <li class="list-item empty-state">
-                    <div class="empty-state-icon">📊</div>
-                    <p>No tournaments available yet.</p>
-                </li>
-            </ul>
-        </div>
+        <div id="tournaments" class="tab-section {{ ($activeTab ?? 'tournaments') === 'tournaments' ? 'active' : '' }}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="section-title" style="margin-bottom: 0;">Meus Torneios</h3>
+                {{-- Optional: "Create Tournament" button if users can create them --}}
+                {{-- @auth
+                    @if(Auth::user()->can('create tournaments') || Auth::user()->isAdmin())
+                        <a href="{{ route('tournaments.create') }}" class="btn-create-tournament" style="...">
+                            Criar Torneio
+                        </a>
+                    @endif
+                @endauth --}}
+            </div>
 
-        {{-- Teams Tab --}}
-        <div id="teams" class="tab-section">
-            <h3 class="section-title">My Teams</h3>
-            @if ($user->teams->count() > 0)
+            @if (isset($myRelevantTournaments) && $myRelevantTournaments->count() > 0)
                 <ul class="list-block">
-                    @foreach ($user->teams as $team)
+                    @foreach ($myRelevantTournaments as $tournament)
                         <li class="list-item">
-                            <div class="team-item">
-                                <img class="team-photo" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/default-team-logo.png') }}" alt="{{ $team->name }}">
-                                <div class="team-info">
-                                    <a href="{{ route('teams.show', $team->id) }}">
-                                        {{ $team->name }}
+                            {{-- Display tournament details: name, banner, game, date etc. --}}
+                            {{-- Example from before: --}}
+                            <div class="tournament-item" style="display: flex; align-items: center; gap: 15px;">
+                                <a href="{{ route('tournaments.show', $tournament->id) }}" style="flex-shrink: 0;">
+                                    <img class="tournament-banner-thumbnail"
+                                        src="{{ $tournament->banner ? asset($tournament->banner) : asset('images/default-tournament-banner.png') }}"
+                                        alt="{{ $tournament->name }} Banner"
+                                        style="width: 120px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #444;">
+                                </a>
+                                <div class="tournament-info" style="flex-grow: 1;">
+                                    <a href="{{ route('tournaments.show', $tournament->id) }}" style="font-size: 1.1em; color: #4da6ff; text-decoration: none; font-weight: 600; display: block; margin-bottom: 5px;">
+                                        {{ $tournament->name }}
                                     </a>
-                                    <span>(
-                                        {{ $team->pivot->role === 'active' ? 'Titular' : 'Reserva' }}
-                                    )</span>
+                                    <span style="font-size: 0.9em; color: #aaa; display: block; margin-bottom: 3px;">
+                                        Jogo: {{ $tournament->game ?? 'N/A' }}
+                                    </span>
+                                    <span style="font-size: 0.9em; color: #aaa; display: block;">
+                                        Data: {{ $tournament->tournament_date ? \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y \à\s H:i') : 'N/A' }}
+                                    </span>
                                 </div>
                             </div>
                         </li>
@@ -321,11 +384,50 @@
                 </ul>
             @else
                 <div class="empty-state">
-                    <div class="empty-state-icon">👥</div>
-                    <p class="text-light">{{ $user->name }} is not currently in any teams.</p>
+                    <div class="empty-state-icon">🏆</div>
+                    <p class="text-light">{{ $user->name }} não está participando de nenhum torneio atualmente (via suas equipes).</p>
                 </div>
             @endif
         </div>
+
+        {{-- Teams Tab --}}
+        <div id="teams" class="tab-section {{ ($activeTab ?? 'teams') === 'teams' ? 'active' : '' }}"> {{-- Assuming you might use the $activeTab default logic we discussed --}}
+    {{-- Flex container for Title and Button --}}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 class="section-title" style="margin-bottom: 0;">My Teams</h3>
+        <a href="{{ route('teams.create') }}" class="btn-create-team">
+            Criar Time
+        </a>
+    </div>
+
+    @if ($user->teams->count() > 0)
+        <ul class="list-block">
+            @foreach ($user->teams as $team)
+                <li class="list-item">
+                    <div class="team-item" style="display: flex; align-items: center;"> {{-- Added style for better item layout --}}
+                        <img class="team-photo" 
+                             src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/default-team-logo.png') }}" 
+                             alt="{{ $team->name }}" 
+                             style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover;"> {{-- Example styling for team photo --}}
+                        <div class="team-info">
+                            <a href="{{ route('teams.show', $team->id) }}" style="font-size: 18px; color: #4da6ff; text-decoration: none; font-weight: 600;">
+                                {{ $team->name }}
+                            </a>
+                            <span style="font-size: 14px; color: #aaa; display: block;"> {{-- Made span a block for clarity --}}
+                                ({{ $team->pivot->role === 'active' ? 'Titular' : ($team->pivot->role === 'backup' ? 'Reserva' : $team->pivot->role) }}) {{-- Assuming roles like 'active', 'backup' --}}
+                            </span>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <div class="empty-state">
+            <div class="empty-state-icon">👥</div>
+            <p class="text-light">{{ $user->name }} is not currently in any teams.</p>
+        </div>
+    @endif
+</div>
     </div>
 </section>
 
@@ -355,6 +457,37 @@
             form.style.display = 'block';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-link');
+    const sections = document.querySelectorAll('.tab-section');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+
+            tab.classList.add('active');
+            const targetSection = document.getElementById(tab.dataset.tab);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+        });
+    });
+
+    window.toggleDescriptionEdit = function() {
+        const display = document.getElementById('description-display');
+        const form = document.getElementById('description-form');
+        
+        if (display.style.display === 'none') {
+            display.style.display = 'block';
+            form.style.display = 'none';
+        } else {
+            display.style.display = 'none';
+            form.style.display = 'block';
+        }
+    };
+});
 </script>
 
 @endsection

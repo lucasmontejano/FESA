@@ -20,24 +20,46 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 Date
-                            </button>
+                            </button>     
                             
-                            <div class="relative">
+                            <div class="relative group">
                                 <button class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
-                                    Any Bracket
+                                    Game
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-                            </div>
-                            
-                            <div class="relative">
-                                <button class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
-                                    Any Format
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
+                                
+                                <!-- Dropdown menu -->
+                                <div class="absolute z-10 hidden group-hover:block mt-1 w-48 bg-gray-800 rounded-md shadow-lg">
+                                    <div class="py-1">
+                                        <!-- CS2 Option -->
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/CS2_logo.svg" alt="CS2" class="w-5 h-5 mr-3">
+                                            Counter-Strike 2
+                                        </a>
+                                        
+                                        <!-- League of Legends Option -->
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/League_of_Legends_2019_vector.svg" alt="LoL" class="w-5 h-5 mr-3">
+                                            League of Legends
+                                        </a>
+                                        
+                                        <!-- VALORANT Option -->
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Valorant_logo_-_pink_color_version.svg" alt="VALORANT" class="w-5 h-5 mr-3">
+                                            VALORANT
+                                        </a>
+                                        
+                                        <!-- All Games Option -->
+                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 border-t border-gray-700">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                            </svg>
+                                            All Games
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -66,7 +88,7 @@
                             <!-- Tournament Banner (Full Width) -->
                             @if($tournament->banner)
                                 <div class="w-full h-56 overflow-hidden">
-                                    <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}" 
+                                    <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}"
                                         alt="{{ $tournament->name }} Banner"
                                         class="w-full h-full object-cover">
                                 </div>
@@ -78,42 +100,108 @@
                                 
                                 <!-- Date and Time Row -->
                                 <div class="flex items-center gap-3 mb-4">
-                                    <div class="flex items-center text-gray-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
-                                        {{ \Carbon\Carbon::parse($tournament->tournament_date)->format('D M d') }}
-                                    </div>
-                                    
-                                    <div class="flex items-center text-gray-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        {{ \Carbon\Carbon::parse($tournament->tournament_date)->format('g:i A') }}
-                                    </div>
-                                    
-                                    <!-- Time Countdown Tag -->
-                                    @php
-                                        $tournamentDate = \Carbon\Carbon::parse($tournament->tournament_date);
-                                        $now = \Carbon\Carbon::now();
-                                        $diffHours = $tournamentDate->diffInHours($now);
-                                        $diffDays = $tournamentDate->diffInDays($now);
-                                    @endphp
-                                    
-                                    @if($diffDays > 0)
-                                        <div class="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full">
-                                            IN {{ $diffDays }} DAY{{ $diffDays > 1 ? 'S' : '' }}
-                                        </div>
-                                    @elseif($diffHours > 0)
-                                        <div class="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full">
-                                            IN {{ $diffHours }} HOUR{{ $diffHours > 1 ? 'S' : '' }}
-                                        </div>
-                                    @else
-                                        <div class="bg-green-600 text-white text-xs px-3 py-1 rounded-full">
-                                            LIVE NOW
-                                        </div>
-                                    @endif
+                                @php
+                                    // Define o local do Carbon para Português do Brasil
+                                    \Carbon\Carbon::setLocale('pt_BR');
+                                    Log::info('Tournament Date: ' . $tournament->tournament_date);
+                                    $tournamentDateCarbon = \Carbon\Carbon::parse($tournament->tournament_date);
+                                    Log::info('Tournament Date Carbon: ' . $tournamentDateCarbon->toDateTimeString());
+                                    $nowCarbon = \Carbon\Carbon::now();
+                                    $totalSecondsDifference = $tournamentDateCarbon->diffInSeconds($nowCarbon);
+
+                                    $isFutureEvent = $tournamentDateCarbon->isFuture();
+
+                                    $formattedTimeDifference = ''; // Variável para armazenar o resultado formatado
+
+                                    if ($totalSecondsDifference == 0) {
+                                        $formattedTimeDifference = 'agora';
+                                    } else {
+                                        $interval = \Carbon\CarbonInterval::seconds($totalSecondsDifference)->cascade();
+
+                                        $parts = [];
+                                        if ($interval->d > 0) { // d é a propriedade para dias no DateInterval/CarbonInterval
+                                            $parts[] = $interval->d . ' ' . ($interval->d === 1 ? 'dia' : 'dias');
+                                        }
+                                        if ($interval->h > 0) { // h é a propriedade para horas
+                                            $parts[] = $interval->h . ' ' . ($interval->h === 1 ? 'hora' : 'horas');
+                                        }
+
+                                        if (empty($parts)) {
+                                            if ($interval->i > 0) { // i é a propriedade para minutos
+                                                $parts[] = $interval->i . ' ' . ($interval->i === 1 ? 'minuto' : 'minutos');
+                                            } elseif ($interval->s > 0 && $totalSecondsDifference < 60) { // s é a propriedade para segundos
+                                                // Mostrar segundos apenas se a diferença total for menor que um minuto
+                                                $parts[] = $interval->s . ' ' . ($interval->s === 1 ? 'segundo' : 'segundos');
+                                            }
+                                        }
+                                        
+                                        if (!empty($parts)) {
+                                            $durationString = implode(' e ', $parts);
+                                            if ($isFutureEvent) {
+                                                $formattedTimeDifference = 'em ' . $durationString;
+                                            } else {
+                                                $formattedTimeDifference = $durationString . ' atrás';
+                                            }
+                                        } elseif ($totalSecondsDifference > 0) { // Fallback se parts ainda estiver vazio mas houver diferença
+                                            $formattedTimeDifference = 'menos de um minuto';
+                                            if ($isFutureEvent) { $formattedTimeDifference = 'em ' . $formattedTimeDifference; }
+                                            else { $formattedTimeDifference = $formattedTimeDifference . ' atrás';}
+                                        }
+                                    }
+
+                                    // Lógica para o texto e classe da tag de contagem regressiva/status
+                                    $tagText = '';
+                                    $tagClass = '';
+
+                                    if ($nowCarbon->lt($tournamentDateCarbon)) { // Torneio está no futuro
+                                        $diffDays = $nowCarbon->diffInDays($tournamentDateCarbon);
+                                        $diffHours = $nowCarbon->diffInHours($tournamentDateCarbon); // Total de horas até o torneio
+                                        $diffMinutes = $nowCarbon->diffInMinutes($tournamentDateCarbon); // Total de minutos até o torneio
+
+                                        if ($diffDays > 0) {
+                                            $tagText = "EM {$diffDays} DIA" . ($diffDays > 1 ? 'S' : '');
+                                            $tagClass = 'bg-indigo-600'; // Azul para futuro distante
+                                        } elseif ($diffHours > 0) { // Torneio é hoje, horas restantes
+                                            $tagText = "EM {$diffHours} HORA" . ($diffHours > 1 ? 'S' : '');
+                                            $tagClass = 'bg-indigo-600'; // Azul para futuro próximo (horas)
+                                        } elseif ($diffMinutes > 0) { // Torneio é hoje, minutos restantes
+                                            $tagText = "EM {$diffMinutes} MINUTO" . ($diffMinutes > 1 ? 'S' : '');
+                                            $tagClass = 'bg-yellow-500 text-black'; // Amarelo para "em breve" (minutos)
+                                        } else { // Praticamente agora
+                                            $tagText = "EM INSTANTES";
+                                            $tagClass = 'bg-green-600'; // Verde para "quase lá" ou "começando"
+                                        }
+                                    } else { // Horário do torneio chegou ou já passou
+                                        // Considera uma "janela ao vivo", por exemplo, por 3 horas após o início
+                                        $hoursPassedSinceStart = $tournamentDateCarbon->diffInHours($nowCarbon);
+                                        if ($hoursPassedSinceStart <= 3) { // Mostrar "AO VIVO" por 3 horas após o início
+                                            $tagText = "AO VIVO";
+                                            $tagClass = 'bg-green-600';
+                                        } else {
+                                            $tagText = "FINALIZADO";
+                                            $tagClass = 'bg-red-600'; // Vermelho para "finalizado"
+                                        }
+                                    }
+                                @endphp
+
+                                {{-- Data Formatada --}}
+                                <div class="flex items-center text-gray-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    {{-- Exemplo: Seg, 26 de Maio --}}
+                                    {{ $tournamentDateCarbon->translatedFormat('D, d \d\e M') }}
                                 </div>
+                                                                
+                                {{-- Hora Formatada --}}
+                                <div class="flex items-center bg-sky-600 text-white text-xs font-medium px-3 py-1 rounded-full ml-auto">                                   
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            {{-- Ícone ajustado para h-4 w-4 e mr-1.5 para melhor harmonia com text-xs --}}
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {{ $formattedTimeDifference }}
+                                    </div>
+                            </div>
                                 
                                 <!-- Location/Country -->
                                 <div class="text-gray-400 mb-4">
@@ -178,39 +266,41 @@
                                         class="w-full bg-gray-700 text-white rounded-lg p-2" required>
                                     
                                     <!-- Game -->
-                                    <input type="text" name="game" placeholder="Jogo" 
-                                        class="w-full bg-gray-700 text-white rounded-lg p-2" required>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-300 mb-2">Jogo</label>
+                                        <div class="relative">
+                                            <select name="game" class="w-full bg-gray-700 text-white rounded-lg p-2 pl-10 appearance-none" required
+                                                    onchange="document.getElementById('game-icon').src = this.selectedOptions[0].dataset.icon">
+                                                <option value="" disabled selected>Selecione um jogo</option>
+                                                <option value="CS2">
+                                                    Counter-Strike 2
+                                                </option>
+                                                <option value="VALORANT">
+                                                    VALORANT
+                                                </option>
+                                                <option value="LOL">
+                                                    League of Legends
+                                                </option>
+                                            </select>
+                                            
+                                        </div>
+                                    </div>
                                     
                                     <!-- Participant Option (Hidden) -->
                                     <input type="hidden" name="participant_option" id="participantOption" value="preset">
                                     
                                     <!-- Max Participants -->
                                     <div class="mb-4">
-                                        <label class="block text-gray-300 mb-2">Número máximo de participantes</label>
+                                        <label class="block text-gray-300 mb-2">Número máximo de equipes participantes</label>
                                         <select name="max_participants" 
                                                 class="w-full bg-gray-700 text-white rounded-lg p-2"
-                                                id="participantSelect"
-                                                onchange="toggleCustomInput(this)">
+                                                required>
                                             <option value="" disabled selected>Selecione uma opção</option>
-                                            <option value="8">8 participantes</option>
-                                            <option value="16">16 participantes</option>
-                                            <option value="32">32 participantes</option>
-                                            <option value="64">64 participantes</option>
-                                            <option value="128">128 participantes</option>
-                                            <option value="custom">Personalizado</option>
+                                            <option value="16">16 equipes</option>
+                                            <option value="32">32 equipes</option>
+                                            <option value="64">64 equipes</option>
+                                            <option value="128">128 equipes</option>
                                         </select>
-                                        
-                                        <!-- Custom Input (hidden by default) -->
-                                        <div id="customParticipantsContainer" class="hidden mt-2">
-                                            <input type="number" name="max_participants" 
-                                                min="8" max="256"
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2"
-                                                id="customParticipantsInput"
-                                                placeholder="Digite o número de participantes (8-256)">
-                                            <p class="text-yellow-400 text-sm mt-1">
-                                                ⚠️ Valores diferentes podem afetar o pareamento e a experiência do torneio.
-                                            </p>
-                                        </div>
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,7 +337,7 @@
                                         <!-- Tournament Time -->
                                         <div>
                                             <label class="block text-gray-300 mb-1">Hora do Torneio</label>
-                                            <input type="time" name="time" 
+                                            <input type="time" name="time"
                                                 class="w-full bg-gray-700 text-white rounded-lg p-2"
                                                 required>
                                             <p class="text-gray-400 text-xs mt-1">Horário de início do torneio</p>
@@ -262,20 +352,24 @@
                                     <textarea name="rules" placeholder="Regras do torneio" 
                                         class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
 
-                                    <!-- Prizes -->
+                                    <!-- prizes -->
                                     <textarea name="prizes" placeholder="Premiações" 
                                         class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
 
                                     <!-- Banner Upload -->
                                     <input type="file" name="banner" id="bannerInput" class="w-full text-white" accept="image/*" required>
 
-                                    <!-- Preview Container -->
-                                    <div class="mt-4">
-                                        <img id="bannerPreview" class="max-h-64 rounded-lg object-contain border border-gray-500" style="display: none;" />
+                                    <!-- Image Preview and Crop Area -->
+                                    <div class="w-full mt-4">
+                                        <label class="block text-gray-300 mb-2">Prévia do banner</label>
+                                        <div class="relative w-full h-56 overflow-hidden border border-gray-600 rounded">
+                                            <img id="imagePreview" class="w-full h-full object-cover" style="display: none;">
+                                        </div>
                                     </div>
+                                    <input type="hidden" name="banner" id="croppedBanner">
 
                                     <!-- Hidden field to store cropped image -->
-                                    <input type="hidden" name="cropped_banner" id="croppedBannerInput">
+                                    <input type="hidden" name="banner" id="croppedBannerInput">
 
                                     
                                     <!-- Submit Button -->
@@ -444,30 +538,35 @@
             });
 
             let cropper;
-            const bannerInput = document.getElementById('bannerInput');
-            const bannerPreview = document.getElementById('bannerPreview');
-            const croppedBannerInput = document.getElementById('croppedBannerInput');
+            const input = document.querySelector('input[name="banner"]');
+            const preview = document.getElementById('imagePreview');
+            const croppedBanner = document.getElementById('croppedBanner');
 
-            bannerInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        bannerPreview.src = e.target.result;
-                        bannerPreview.style.display = 'block';
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
 
-                        if (cropper) {
-                            cropper.destroy();
+                const reader = new FileReader();
+                reader.onload = () => {
+                    preview.src = reader.result;
+                    preview.style.display = 'block';
+
+                    if (cropper) cropper.destroy();
+
+                    cropper = new Cropper(preview, {
+                        aspectRatio: 16 / 5, // same as w-full h-56 (roughly 320x112)
+                        viewMode: 1,
+                        autoCropArea: 1,
+                        cropend() {
+                            const canvas = cropper.getCroppedCanvas({
+                                width: 1280, // or desired banner size
+                                height: 448
+                            });
+                            croppedBanner.value = canvas.toDataURL('image/jpeg');
                         }
-
-                        cropper = new Cropper(bannerPreview, {
-                            aspectRatio: 16 / 9, // Or whatever aspect ratio your banner uses
-                            viewMode: 1,
-                            autoCropArea: 1,
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                }
+                    });
+                };
+                reader.readAsDataURL(file);
             });
 
             // Intercept form submission to crop the image first

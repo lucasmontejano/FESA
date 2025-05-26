@@ -65,7 +65,20 @@ class TeamPolicy
     }
 
     public function addMember(User $user, Team $team)
-{
-    return $team->canAddMember();
-}
+    {
+        return $team->canAddMember();
+    }
+
+    /**
+     * Determina se o usuário autenticado pode remover um membro específico da equipe.
+     *
+     * @param  \App\Models\User  $user O usuário autenticado (quem está tentando a ação)
+     * @param  \App\Models\Team  $team A equipe da qual o membro será removido
+     * @param  \App\Models\User  $memberToRemove O membro que se deseja remover
+     * @return bool
+     */
+    public function removeMember(User $user, Team $team, User $memberToRemove): bool
+    {
+        return $user->id === $team->leader_id && $memberToRemove->id !== $team->leader_id;
+    }
 }

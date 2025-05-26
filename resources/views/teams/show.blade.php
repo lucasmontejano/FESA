@@ -238,14 +238,14 @@
                             <a href="{{ route('teams.manage', $team->id) }}" class="btn-primary">Gerenciar Time</a>
                             @can('update', $team)
                             <button onclick="generateInviteLink('{{ $team->id }}')" class="btn-primary">
-                                Generate Invite Link
+                                Gerar convite
                             </button>
 
                             <div id="invite-link-container-{{ $team->id }}" style="display: none; margin-top: 10px;">
                                 <div class="input-group">
                                     <input type="text" id="invite-link-{{ $team->id }}" class="form-control" readonly>
                                     <button class="btn btn-outline-secondary" onclick="copyInviteLink({{ $team->id }})">
-                                        Copy
+                                        Copiar
                                     </button>
                                 </div>
                                 <small class="text-muted" id="invite-expires-{{ $team->id }}"></small>
@@ -364,40 +364,103 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Your existing invite link functions
     function generateInviteLink(teamId) {
-        fetch(`/teams/${teamId}/invite`, {
+        // Forma mais robusta de obter o token CSRF, caso este script esteja em um arquivo .js separado
+        // Certifique-se de ter <meta name="csrf-token" content="{{ csrf_token() }}"> no <head> do seu HTML.
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(`/teams/${teamId}/invite`, { // Certifique-se que esta rota POST exista
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errData => {
+                    throw new Error(errData.message || "Falha ao gerar o link. Código: " + response.status);
+                }).catch(() => {
+                    throw new Error("Falha ao gerar o link. Código: " + response.status);
+                });
             }
-            
-            const container = document.getElementById(`invite-link-container-${teamId}`);
-            const input = document.getElementById(`invite-link-${teamId}`);
-            const expires = document.getElementById(`invite-expires-${teamId}`);
-            
-            input.value = data.url;
-            if (expires) expires.textContent = `Expires: ${data.expires}`;
-            container.style.display = 'block';
+            return response.json();
+        })
+        .then(data => {
+            if (data.url) {
+                const container = document.getElementById(`invite-link-container-${teamId}`);
+                const inputField = document.getElementById(`invite-link-${teamId}`);
+                const expiryInfoElement = document.getElementById(`invite-expires-${teamId}`);
+                
+                // Encontra o elemento <small> genérico para poder escondê-lo se necessário
+                const genericMultipleUseTextElement = container.querySelector('small.text-muted.d-block');
+
+
+                if (inputField) {
+                    inputField.value = data.url;
+                }
+
+                let displayText = '';
+                if (data.max_uses && data.uses_left !== undefined) {
+                    displayText = `Válido para ${data.uses_left} ${data.uses_left === 1 ? 'uso' : 'usos'}`;
+                }
+
+                if (data.expires) { // data.expires vem do diffForHumans()
+                    if (displayText) {
+                        displayText += `, expira ${data.expires}.`;
+                    } else {
+                        displayText = `Expira ${data.expires}.`;
+                    }
+                } else if (displayText) {
+                    displayText += '.'; // Adiciona um ponto final se apenas o texto de usos estiver presente
+                }
+
+
+                if (expiryInfoElement) {
+                    expiryInfoElement.textContent = displayText || 'Link gerado.'; // Atualiza o conteúdo do <small>
+                    expiryInfoElement.style.display = 'inline'; // Garante que esteja visível (pode ser 'block' se preferir nova linha)
+                }
+                
+                // Se exibimos informações detalhadas, escondemos a mensagem genérica
+                if (genericMultipleUseTextElement && displayText) {
+                    genericMultipleUseTextElement.style.display = 'none';
+                } else if (genericMultipleUseTextElement) {
+                     genericMultipleUseTextElement.style.display = 'block'; // Ou 'inline'
+                }
+
+
+                if (container) {
+                    container.style.display = 'block';
+                }
+
+            } else {
+                alert(data.message || "Erro ao obter URL do link.");
+            }
         })
         .catch(error => {
-            alert("Failed to generate invite.");
-            console.error(error);
+            alert(error.message || "Falha ao gerar o link de convite. Verifique se você tem permissão.");
+            console.error('Error generating invite link:', error);
         });
     }
 
-function copyInviteLink(teamId) {
-    const input = document.getElementById(`invite-link-${teamId}`);
-    input.select();
-    document.execCommand('copy');
-    alert('Invite link copied to clipboard!');
-}
+    function copyInviteLink(teamId) {
+        const inputField = document.getElementById(`invite-link-${teamId}`);
+        if (!inputField) {
+            console.error(`Campo de input invite-link-${teamId} não encontrado.`);
+            return;
+        }
+
+        inputField.select(); // Seleciona o texto no campo de input
+        inputField.setSelectionRange(0, 99999); // Para compatibilidade com dispositivos móveis
+
+        try {
+            var successful = document.execCommand('copy'); // Tenta copiar o texto selecionado
+            var msg = successful ? 'Link copiado para a área de transferência!' : 'Falha ao copiar o link.';
+            alert(msg);
+        } catch (err) {
+            alert('Oops, não foi possível copiar. Por favor, copie manualmente.');
+            console.error('Erro ao copiar o texto: ', err);
+        }
+    }
 </script>
 @endsection

@@ -7,6 +7,7 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileNavigationController;
 use App\Models\Tournament;
 
 // Public Routes
@@ -32,10 +33,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('tournaments', TournamentController::class)->except(['index']);
 });
 
-// Public Tournament Listing
-Route::get('/tournaments', [TournamentController::class, 'index'])
-    ->name('tournaments.index');
-
 Route::get('/tournaments/{tournament}', [TournamentController::class, 'show'])->name('tournaments.show');
 Route::put('/tournaments/{tournament}', [TournamentController::class, 'update'])->name('tournaments.update');
 Route::delete('/tournaments/{tournament}', [TournamentController::class, 'destroy'])->name('tournaments.destroy');
@@ -50,7 +47,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/teams/join/{token}', [TeamController::class, 'join'])->name('teams.join');
     Route::get('/teams/{team}/manage', [TeamController::class, 'manage'])->name('teams.manage');
     Route::put('/teams/{team}/members/{member}/role', [TeamController::class, 'updateMemberRole'])->name('teams.updateMemberRole');
-    Route::delete('/teams/{team}/members/{member}', [TeamController::class, 'removeMember'])->name('teams.removeMember');
+    Route::delete('/teams/{team}/members/{member}/remove', [TeamController::class, 'removeMember'])->name('teams.removeMember');
+    Route::post('/teams/{team}/invite', [TeamController::class, 'generateInviteUrl'])->name('teams.generateInviteUrl');
+    Route::get('/team-invite/{token}', [TeamController::class, 'showInvite'])->name('teams.showInvite');
+    Route::post('/team-invite/{token}', [TeamController::class, 'acceptInvite'])->name('teams.acceptInvite');
+    Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])->name('teams.updatePositions');
 });
 
 // Profile Routes
@@ -60,17 +61,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/update-description', [ProfileController::class, 'update'])->name('profile.updateDescription');
 });
 
-Route::post('/teams/{team}/invite', [TeamController::class, 'generateInviteUrl'])
-    ->name('teams.generateInviteUrl')
+Route::post('/tournaments/{tournament}/subscribe-team', [TournamentController::class, 'subscribeTeam'])
+    ->name('tournaments.subscribeTeam')
     ->middleware('auth');
 
-Route::get('/team-invite/{token}', [TeamController::class, 'showInvite'])
-    ->name('teams.showInvite');
-
-Route::post('/team-invite/{token}', [TeamController::class, 'acceptInvite'])
-    ->name('teams.acceptInvite')
-    ->middleware('auth');
-
-Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])
-    ->name('teams.updatePositions')
+Route::delete('/tournaments/{tournament}/unsubscribe-team/{team}', [TournamentController::class, 'unsubscribeTeam'])
+    ->name('tournaments.unsubscribeTeam')
     ->middleware('auth');

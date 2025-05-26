@@ -71,4 +71,15 @@ class Team extends Model
     {
         return $this->hasMany(TeamInvite::class);
     }
+
+    /**
+     * Os torneios nos quais esta equipe está inscrita.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function tournaments()
+    {
+        return $this->belongsToMany(Tournament::class, 'team_tournament', 'team_id', 'tournament_id')
+                    ->withTimestamps(); // Se você adicionou timestamps à sua tabela pivot
+    }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Tournament;
+use App\Models\Team;
 
 class User extends Authenticatable
 {
@@ -50,14 +50,30 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Define a relação para os torneios criados pelo usuário.
+     */
     public function tournaments()
     {
-        return $this->hasMany(Tournament::class);
+        return $this->hasMany(Tournament::class); // Isso geralmente significa torneios que o usuário criou
     }
 
+    /**
+     * Define a relação para todas as equipes das quais o usuário é membro.
+     */
     public function teams()
     {
         return $this->belongsToMany(Team::class, 'team_members')->withPivot('role')->withTimestamps();
+    }
+
+    /**
+     * Define a relação para as equipes que o usuário lidera.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function ledTeams()
+    {
+        return $this->hasMany(Team::class, 'leader_id');
     }
     
     /**
@@ -67,6 +83,7 @@ class User extends Authenticatable
      */
     public function isAdmin()
     {
+        // Supondo que você tenha uma coluna 'role' na tabela 'users'
         return $this->role === 'admin'; 
     }
 
