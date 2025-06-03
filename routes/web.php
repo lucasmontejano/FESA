@@ -7,6 +7,7 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MatchController;
 use App\Http\Controllers\ProfileNavigationController;
 use App\Models\Tournament;
 
@@ -68,3 +69,8 @@ Route::post('/tournaments/{tournament}/subscribe-team', [TournamentController::c
 Route::delete('/tournaments/{tournament}/unsubscribe-team/{team}', [TournamentController::class, 'unsubscribeTeam'])
     ->name('tournaments.unsubscribeTeam')
     ->middleware('auth');
+
+Route::get('/tournaments/{tournament}/bracket', [TournamentController::class, 'showBracket'])->name('tournaments.bracket')->middleware('auth');
+
+// In routes/web.php
+Route::get('/matches/{match}', [MatchController::class, 'show'])->name('matches.show')->middleware('auth');

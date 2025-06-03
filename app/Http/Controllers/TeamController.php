@@ -194,67 +194,41 @@ class TeamController extends Controller
 
 public function acceptInvite($token)
 {
-    Log::info("--- Início do Processo de Aceitar Convite --- Token: {$token}");
     $invite = TeamInvite::where('token', $token)
-                                  // ->where('expires_at', '>', now()) // Vamos remover este where temporariamente para logging
+                                  ->where('expires_at', '>', now())
                                   ->with('team')
                                   ->first();
 
     if (!$invite) {
-        Log::error("[Accept Invite] Convite NÃO ENCONTRADO no BD para o Token: {$token}. Query executada (aproximada): TeamInvite::where('token', '{$token}')->first()");
         return redirect()->route('teams.index')->with('error', 'Link de convite inválido.');
     }
 
-    // Log do estado inicial do convite encontrado
-    Log::info("[Accept Invite] Convite ID {$invite->id} ENCONTRADO. Expires At ATUAL: " . $invite->expires_at->toIso8601String() . ", Uses: {$invite->uses}, MaxUses: {$invite->max_uses}");
-
-    // Agora, faça as verificações que antes estavam na query ou no método isValid()
     if ($invite->expires_at->isPast()) {
-        Log::warning("[Accept Invite] Convite ID {$invite->id} está EXPIRADO. Expires At: {$invite->expires_at->toIso8601String()}, Hora Atual: " . now()->toIso8601String());
         return redirect()->route('teams.index')->with('error', 'Este link de convite expirou.');
     }
 
     if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-        Log::warning("[Accept Invite] Convite ID {$invite->id} atingiu o MÁXIMO DE USOS. Uses: {$invite->uses}, MaxUses: {$invite->max_uses}");
         return redirect()->route('teams.index')->with('error', 'Este link de convite já atingiu o número máximo de usos.');
     }
 
-    // ... (suas outras verificações: if (!$invite->team || !$invite->team->canAddMember()), if ($invite->team->members()->where('user_id', auth()->id())->exists())) ...
-    // Adicione logs dentro dessas verificações também se necessário
-
-    // Se todas as verificações passarem:
     $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
     $invite->team->members()->attach(auth()->id(), [
         'role' => $role,
         'joined_at' => now()
     ]);
-    Log::info("[Accept Invite] Membro ID " . auth()->id() . " adicionado à equipe ID {$invite->team_id} como {$role}.");
 
-    // Guarde o valor de expires_at ANTES de incrementar 'uses'
-    $expiresAtBeforeIncrement = $invite->expires_at->toIso8601String();
-    Log::info("[Accept Invite] Invite ID {$invite->id} - expires_at ANTES do increment: " . $expiresAtBeforeIncrement);
-
-    //$invite->increment('uses'); // Esta é a operação que atualiza o banco
+    //$invite->increment('uses');
     $invite->uses = $invite->uses + 1;
-    $invite->timestamps = false; // Para evitar que updated_at seja modificado por este save
-    $invite->save(['touch' => false]); // Salva sem disparar eventos de toque e sem atualizar timestamps
-    $invite->timestamps = true; // Reabilita
+    $invite->timestamps = false; 
+    $invite->save(['touch' => false]); 
+    $invite->timestamps = true;
 
-    // CRUCIAL: Recarregue o modelo do banco de dados para ver o estado REAL após o increment
     $invite->refresh();
-    Log::info("[Accept Invite] Invite ID {$invite->id} - expires_at DEPOIS do increment e refresh: " . $invite->expires_at->toIso8601String() . ". Uses ATUAL: " . $invite->uses);
-
-    // Verifique se mudou
-    if ($invite->expires_at->toIso8601String() !== $expiresAtBeforeIncrement) {
-        Log::critical("[Accept Invite] Invite ID {$invite->id} - ATENÇÃO: expires_at FOI ALTERADO INESPERADAMENTE! Antes: {$expiresAtBeforeIncrement}, Depois: " . $invite->expires_at->toIso8601String());
-    }
 
     if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-        Log::info("[Accept Invite] Invite ID {$invite->id} atingiu o limite de usos e será deletado. Uses: {$invite->uses}");
-        // $invite->delete(); // Comente temporariamente para inspeção no BD
+        $invite->delete(); // Comente temporariamente para inspeção no BD
     }
 
-    Log::info("--- Fim do Processo de Aceitar Convite --- Token: {$token}");
     return redirect()->route('teams.show', $invite->team_id)
         ->with('success', "Você entrou na equipe '{$invite->team->name}' como {$role}!");
 }

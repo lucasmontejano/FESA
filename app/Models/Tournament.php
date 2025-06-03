@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class Tournament extends Model
 {
@@ -15,13 +17,14 @@ class Tournament extends Model
         'max_participants', 
         'user_id', 
         'game', 
-        'start_date', 
-        'end_date',
-        'tournament_date',
-        'time',
+        'start_date', //Registration start date
+        'end_date', //Registration end date
+        'tournament_date', // Date of the tournament
+        'time', // Time of the tournament
         'rules',
         'prizes',
         'banner',
+        'status',
     ];
 
     protected $casts = [
@@ -46,5 +49,10 @@ class Tournament extends Model
         // mas é bom ser explícito se os nomes forem diferentes.
         return $this->belongsToMany(Team::class, 'team_tournament', 'tournament_id', 'team_id')
                     ->withTimestamps(); // Se você adicionou timestamps à sua tabela pivot
+    }
+
+    public function matchups(): HasMany
+    {
+        return $this->hasMany(Matchup::class); // Assuming Matchup model exists
     }
 }

@@ -144,24 +144,44 @@ class TournamentController extends Controller
     public function show(string $id)
     {
         $tournament = Tournament::findOrFail($id);
+        $user = Auth::user(); 
+        $isParticipant = false;
+
+        if ($user) {
+            $userTeamIds = $user->teams()->pluck('teams.id'); 
+
+            if ($userTeamIds->isNotEmpty()) {
+                if ($tournament->teams()->whereIn('teams.id', $userTeamIds)->exists()) {
+                    $isParticipant = true;
+                }
+            }
+        }
+        
+        //dd($isParticipant, $tournament->status, $tournament->matchups()->exists());
+        if (
+            $isParticipant &&
+            isset($tournament->status) &&
+            in_array($tournament->status, ['live', 'generating_matches', 'round_1_pending', 'completed']) && // Adjust statuses as needed
+            $tournament->matchups()->exists() 
+        ) {
+            return redirect()->route('tournaments.bracket', $tournament);
+        }
+
 
         $participants_count = DB::table('team_tournament')
                                 ->where('tournament_id', $tournament->id)
                                 ->count();
 
-        $user = Auth::user();
-        $ledTeams = collect(); // Inicializa como uma coleção vazia
+        $ledTeams = collect();
         $subscribedLedTeam = null;
-
-        if ($user) {
-            $ledTeams = $user->ledTeams()->get(); // Assumes ledTeams() relationship exists on User model
+        if ($user) { 
+            $ledTeams = $user->ledTeams()->get(); 
 
             if ($ledTeams->isNotEmpty()) {
-                // Check if any of the user's led teams are in this tournament using the pivot table
                 $subscribedTeamIdsForThisTournament = DB::table('team_tournament')
                                                         ->where('tournament_id', $tournament->id)
                                                         ->pluck('team_id')
-                                                        ->all(); // Get an array of team_ids
+                                                        ->all(); 
 
                 foreach ($ledTeams as $team) {
                     if (in_array($team->id, $subscribedTeamIdsForThisTournament)) {
@@ -172,13 +192,12 @@ class TournamentController extends Controller
             }
         }
 
-        // Carrega a view com os dados necessários
-         return view('tournaments.show', [
+        return view('tournaments.show', [
             'tournament' => $tournament,
-            'participants_count' => $participants_count, // Pass the directly calculated count
+            'participants_count' => $participants_count,
             'ledTeams' => $ledTeams,
             'subscribedLedTeam' => $subscribedLedTeam,
-            // 'activeTab' => $activeTab, // If you were using this for tabs on this page
+            // 'activeTab' => $activeTab, // Pass if your tournaments.show page uses tabs
         ]);
     }
 
@@ -291,16 +310,13 @@ class TournamentController extends Controller
         }
 
         // 3. CRUCIAL: Verify no member of the selected team is already in this tournament with another team
-        //    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
         $incomingTeamUserIds = $teamToSubscribe->members()->pluck('users.id')->toArray(); // CORRECTED
-        //    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         // Get all user IDs from teams already in the tournament
         $usersInTournament = collect();
         foreach ($tournament->teams as $subscribedTeam) { // $subscribedTeam is an instance of Team
-            //    vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-            $usersInTournament = $usersInTournament->merge($subscribedTeam->members()->pluck('users.id')); // CORRECTED: members() and pluck('id')
-            //    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            $usersInTournament = $usersInTournament->merge($subscribedTeam->members()->pluck('users.id'));
         }
         $usersInTournament = $usersInTournament->unique();
 
@@ -348,5 +364,72 @@ class TournamentController extends Controller
         $tournament->teams()->detach($team->id);
 
         return back()->with('success', "A inscrição da equipe '{$team->name}' foi cancelada.");
+    }
+
+    // In TournamentController.php
+    public function showBracket(Tournament $tournament)
+    {
+        // Ensure only authorized users can see, or if it's public
+        // You might want to check if $tournament->status is 'live' or 'completed'
+
+        $formattedMatchups = $tournament->matchups->map(function ($match) {
+            return [
+                'id' => $match->id,
+                'round_number' => $match->round_number,
+                'match_in_round' => $match->match_in_round, // Useful for ordering/placement
+                'team1_id' => $match->team1_id,
+                'team1_name' => $match->team1 ? $match->team1->name : 'BYE / Aguardando',
+                'team1_picture' => $match->team1 && $match->team1->picture ? asset('images/team_pictures/' . $match->team1->picture) : asset('images/default-team-logo.png'),
+                'team1_score' => $match->team1_score,
+                'team2_id' => $match->team2_id,
+                'team2_name' => $match->team2 ? $match->team2->name : 'BYE / Aguardando',
+                'team2_picture' => $match->team2 && $match->team2->picture ? asset('images/team_pictures/' . $match->team2->picture) : asset('images/default-team-logo.png'),
+                'team2_score' => $match->team2_score,
+                'winner_id' => $match->winner_id,
+                'status' => $match->status,
+                // Some libraries might need 'next_match_id' or similar to draw lines
+            ];
+        });
+
+        if (!in_array($tournament->status, ['live', 'generating_matches', 'completed'])) { // Adjust statuses
+            abort(404, 'Bracket not available yet or tournament not live.');
+        }
+
+        $tournament->load(['matchups' => function ($query) {
+            $query->orderBy('round_number')->orderBy('match_in_round');
+        }, 'matchups.team1', 'matchups.team2', 'matchups.winner']);
+
+        $rounds = $tournament->matchups->groupBy('round_number');
+
+        $currentUserTeamMatchId = null;
+        $isParticipant = false; // New flag
+
+        if (Auth::check()) {
+            $user = Auth::user();
+            $userTeamIds = $user->teams()->pluck('teams.id');
+            if ($userTeamIds->isNotEmpty()) {
+                // Check if any of user's teams are in any of the matchups for this tournament
+                // This also implicitly means they are a participant in the tournament overall
+                $isParticipant = $tournament->matchups()->where(function ($query) use ($userTeamIds) {
+                    $query->whereIn('team1_id', $userTeamIds)
+                        ->orWhereIn('team2_id', $userTeamIds);
+                })->exists();
+            }
+
+
+            foreach($tournament->matchups as $match) {
+                if (
+                    ($match->team1_id && $userTeamIds->contains($match->team1_id)) ||
+                    ($match->team2_id && $userTeamIds->contains($match->team2_id))
+                ) {
+                    if(in_array($match->status, ['pending', 'live'])){ // Current active/pending match
+                        $currentUserTeamMatchId = $match->id;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return view('tournaments.bracket', compact('tournament', 'rounds', 'currentUserTeamMatchId', 'isParticipant', 'formattedMatchups'));
     }
 }

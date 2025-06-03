@@ -103,9 +103,7 @@
                                 @php
                                     // Define o local do Carbon para Português do Brasil
                                     \Carbon\Carbon::setLocale('pt_BR');
-                                    Log::info('Tournament Date: ' . $tournament->tournament_date);
                                     $tournamentDateCarbon = \Carbon\Carbon::parse($tournament->tournament_date);
-                                    Log::info('Tournament Date Carbon: ' . $tournamentDateCarbon->toDateTimeString());
                                     $nowCarbon = \Carbon\Carbon::now();
                                     $totalSecondsDifference = $tournamentDateCarbon->diffInSeconds($nowCarbon);
 
