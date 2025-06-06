@@ -349,18 +349,14 @@ class TournamentController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Verify user is the leader of the team
-        // Example: if ($team->leader_id !== $user->id && !$user->ledTeams()->where('teams.id', $team->id)->exists()) {
         if (!$user->ledTeams()->where('teams.id', $team->id)->exists()) {
             return back()->with('error', 'Você não é o líder desta equipe para cancelar a inscrição.');
         }
 
-        // 2. Check if the team is actually subscribed
         if (!$tournament->teams->contains($team->id)) {
             return back()->with('info', 'Esta equipe não está inscrita neste torneio.');
         }
 
-        // 3. Unsubscribe the team
         $tournament->teams()->detach($team->id);
 
         return back()->with('success', "A inscrição da equipe '{$team->name}' foi cancelada.");
@@ -369,8 +365,16 @@ class TournamentController extends Controller
     // In TournamentController.php
     public function showBracket(Tournament $tournament)
     {
-        // Ensure only authorized users can see, or if it's public
-        // You might want to check if $tournament->status is 'live' or 'completed'
+
+        $tournament->load(['teams',
+            'matchups' => function ($query) {
+                $query->orderBy('round_number')->orderBy('match_in_round');
+            },
+            'matchups.team1',
+            'matchups.team2',
+            'matchups.winner'
+        ]);
+
 
         $formattedMatchups = $tournament->matchups->map(function ($match) {
             return [
@@ -391,13 +395,13 @@ class TournamentController extends Controller
             ];
         });
 
-        if (!in_array($tournament->status, ['live', 'generating_matches', 'completed'])) { // Adjust statuses
+        $participantTeamsForBracket = $tournament->teams->map(function ($team) {
+            return ['id' => $team->id, 'name' => $team->name];
+        });
+
+        if (!in_array($tournament->status, ['live', 'generating_matches', 'completed', 'round_1_pending'])) { // Moved status check after loading
             abort(404, 'Bracket not available yet or tournament not live.');
         }
-
-        $tournament->load(['matchups' => function ($query) {
-            $query->orderBy('round_number')->orderBy('match_in_round');
-        }, 'matchups.team1', 'matchups.team2', 'matchups.winner']);
 
         $rounds = $tournament->matchups->groupBy('round_number');
 
@@ -408,8 +412,6 @@ class TournamentController extends Controller
             $user = Auth::user();
             $userTeamIds = $user->teams()->pluck('teams.id');
             if ($userTeamIds->isNotEmpty()) {
-                // Check if any of user's teams are in any of the matchups for this tournament
-                // This also implicitly means they are a participant in the tournament overall
                 $isParticipant = $tournament->matchups()->where(function ($query) use ($userTeamIds) {
                     $query->whereIn('team1_id', $userTeamIds)
                         ->orWhereIn('team2_id', $userTeamIds);
@@ -429,7 +431,7 @@ class TournamentController extends Controller
                 }
             }
         }
-
-        return view('tournaments.bracket', compact('tournament', 'rounds', 'currentUserTeamMatchId', 'isParticipant', 'formattedMatchups'));
+        
+        return view('tournaments.bracket', compact('tournament', 'rounds', 'currentUserTeamMatchId', 'isParticipant', 'formattedMatchups', 'participantTeamsForBracket'));
     }
 }

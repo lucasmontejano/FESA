@@ -3,131 +3,152 @@
 @section('title', 'Bracket: ' . $tournament->name)
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-white mb-2 text-center">{{ $tournament->name }}</h1>
-    <p class="text-xl text-yellow-400 mb-6 text-center">Status: {{ ucfirst(str_replace('_', ' ', $tournament->status)) }}</p>
+<section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-white mb-2 text-center">{{ $tournament->name }}</h1>
+        <p class="text-xl text-yellow-400 mb-6 text-center">Status: {{ ucfirst(str_replace('_', ' ', $tournament->status)) }}</p>
 
-    {{-- Container for the JavaScript Bracket Library --}}
-    <div id="bracket-container" class="bg-gray-800 p-2 md:p-6 rounded-lg shadow-xl">
-        {{-- The JS library will render the bracket here --}}
-        {{-- You might need some specific structure or styling based on the library --}}
-    </div>
+        <div id="bracket-container" class="bg-gray-800 p-2 md:p-6 rounded-lg shadow-xl min-h-[400px] flex items-center justify-center">
+            <p class="text-white text-xl">Carregando bracket...</p>
+        </div>
 
-    {{-- "Go to My Match" Button - Placed after the bracket container --}}
-    @if($isParticipant)
-    <div class="text-center mt-8 mb-6">
-        @if(isset($currentUserTeamMatchId) && $currentUserTeamMatchId)
-            <a href="{{ route('matches.show', $currentUserTeamMatchId) }}"
-               class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
-                Ir para Minha Partida Atual
-            </a>
-        @else
-            <p class="text-gray-400 text-lg">Sua equipe não tem uma partida pendente ou ativa no momento.</p>
+        {{-- "Go to My Match" Button - Placed after the bracket container --}}
+        @if($isParticipant)
+        <div class="text-center mt-8 mb-6">
+            @if(isset($currentUserTeamMatchId) && $currentUserTeamMatchId)
+                <a href="{{ route('matches.show', $currentUserTeamMatchId) }}"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105">
+                    Ir para Minha Partida Atual
+                </a>
+            @else
+                <p class="text-gray-400 text-lg">Sua equipe não tem uma partida pendente ou ativa no momento.</p>
+            @endif
+        </div>
         @endif
     </div>
-    @endif
-</div>
+</section>
 @endsection
 
-@push('styles')
-{{-- Include CSS for your chosen bracket library if it's not globally included --}}
-{{-- Example for brackets-viewer.js --}}
-<link rel="stylesheet" href="https://unpkg.com/brackets-viewer@latest/dist/brackets-viewer.min.css" />
-<style>
-    /* Custom styles for the bracket container or library overrides */
-    #bracket-container .round-title { color: white; margin-bottom: 10px; }
-    #bracket-container .match-location { display: none; } /* Example: Hide default location text */
-    #bracket-container .team { color: #e0e0e0; background-color: #374151; border-color: #4b5563; } /* Darker team boxes */
-    #bracket-container .team.winner { color: #a7f3d0; border-color: #10b981; } /* Winner style */
-    #bracket-container .score { color: white; }
-    #bracket-container .connector { border-color: #4b5563; }
-    #bracket-container .connector .connector { border-color: #4b5563; }
-</style>
-@endpush
-
 @push('scripts')
-{{-- Include JS for your chosen bracket library if it's not globally included --}}
-{{-- Example for brackets-viewer.js --}}
-<script src="https://unpkg.com/brackets-viewer@latest/dist/brackets-viewer.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const matchupsData = @json($formattedMatchups); // Get data from controller
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-    if (matchupsData && matchupsData.length > 0) {
-        // This is a conceptual data transformation.
-        // You NEED to adapt this to the specific format your chosen library requires.
-        // The `brackets-viewer.js` library expects a specific structure often involving stages, groups, rounds, and matches.
-        // For a simple single elimination, you might need to structure it like:
-        const roundsForViewer = [];
-        let currentRound = 1;
-        let matchesInCurrentRound = [];
-
-        // This is a very simplified data prep assuming single stage, single group.
-        // You'll likely need to iterate through your $rounds collection from the controller
-        // or process matchupsData more thoroughly.
-        // The data structure below is a guess for brackets-viewer.js minimal data.
-        // Please consult the library's documentation for the correct data structure.
-
-        // Example: Constructing data for `brackets-viewer.js` (this is complex and needs care)
-        // This requires knowing how many rounds total, team seeding, etc.
-        // For a simple display, you might need to manually structure `stages`, `groups`, `rounds`, `matches`.
-        // A more straightforward approach for simpler libraries is just a list of matches with IDs and participant names/scores.
-
-        // Let's try a simpler conceptual example of initializing a generic library
-        // Assuming a library that takes a flat list and figures out rounds:
-        const bracketDataForSimpleLibrary = matchupsData.map(match => ({
-            matchId: match.id,
-            round: match.round_number,
-            // teams: [
-            //     { name: match.team1_name, score: match.team1_score, id: match.team1_id },
-            //     { name: match.team2_name, score: match.team2_score, id: match.team2_id }
-            // ],
-            // winner_id: match.winner_id // If library supports highlighting winner
-        }));
-        
-        // Placeholder for actual library initialization
-        // console.log("Data prepared for bracket library:", bracketDataForSimpleLibrary);
-        // For `brackets-viewer.js`, you would do something like:
-        // window.bracketsViewer.render({
-        //     stages: [...], // You need to build this structure
-        //     matches: [...],
-        //     participants: [...], // List of all unique teams
-        //     tournament_type: 'single_elimination' // or 'double_elimination'
-        // }, {
-        //     selector: "#bracket-container",
-        //     // ... other options
-        // });
-        // Due to complexity of data prep for brackets-viewer from flat list,
-        // I'll add a placeholder message if no library is fully integrated.
+        const rawParticipantTeams = @json($participantTeamsForBracket ?? []);
+        const tournamentNameForStage = @json($tournament->name ?? 'Torneio');
         const bracketContainer = document.getElementById('bracket-container');
-        if(bracketContainer) {
-            if (typeof window.bracketsViewer !== 'undefined' && matchupsData.length > 0) {
-                // You would need to transform `matchupsData` into the full complex structure
-                // required by brackets-viewer.js, including stages, groups, participants lists etc.
-                // This is non-trivial.
-                // For now, let's just indicate what data is available.
-                bracketContainer.innerHTML = `<pre class="text-white text-xs">${JSON.stringify(matchupsData, null, 2)}</pre><p class="text-yellow-400 mt-4">Integração com a biblioteca de brackets visuais (ex: brackets-viewer.js) precisa ser completada aqui, transformando os dados acima no formato esperado pela biblioteca.</p>`;
-            } else if (matchupsData.length > 0) {
-                bracketContainer.innerHTML = '<p class="text-yellow-400">Biblioteca de bracket visual não carregada, mas os dados das partidas estão disponíveis.</p>';
-            } else {
-                bracketContainer.innerHTML = '<p class="text-gray-400">Nenhum confronto gerado para este bracket ainda.</p>';
+        const rawMatchesData = @json($formattedMatchups ?? []);
+
+        console.log("JS: Raw Participants Received:", typeof rawParticipantTeams !== 'undefined' ? rawParticipantTeams : 'rawParticipantTeams IS UNDEFINED');
+        console.log("JS: Raw Matches Received:", typeof rawMatchesData !== 'undefined' ? rawMatchesData : 'rawMatchesData IS UNDEFINED');
+        console.log("JS: Bracket Container Element:", bracketContainer);
+        console.log("JS: Is bracketsViewer library loaded?", typeof window.bracketsViewer);
+
+        if (!bracketContainer || typeof window.bracketsViewer === 'undefined') {
+            console.error('Bracket container or bracketsViewer library not found.');
+            if (bracketContainer) {
+                bracketContainer.innerHTML = '<p class="text-red-500 text-center py-10">Erro: Biblioteca de brackets não carregada.</p>';
+            }
+            return;
+        }
+
+        if (rawParticipantTeams.length < 2 && rawMatchesData.length === 0) {
+            bracketContainer.innerHTML = '<p class="text-gray-400 text-center py-10">Não há equipes ou confrontos suficientes para exibir o bracket.</p>';
+            return;
+        }
+        if (rawMatchesData.length === 0) { // Separate check if participants exist but no matches
+            bracketContainer.innerHTML = '<p class="text-gray-400 text-center py-10">Nenhum confronto gerado para este bracket ainda.</p>';
+            return;
+        }
+
+
+        try {
+            const participants = rawParticipantTeams.map(team => ({
+                id: team.id.toString(), // Ensure ID is a string if library is strict
+                name: team.name,
+            }));
+
+            const matchesForViewer = rawMatchesData.map(match => {
+                let result1 = null; // Default to null for pending matches
+                let result2 = null; // Default to null for pending matches
+
+                if (match.winner_id) {
+                    if (match.team1_id) { // Ensure team1_id exists before checking
+                        result1 = (match.winner_id.toString() === match.team1_id.toString()) ? 'win' : 'loss';
+                    }
+                    if (match.team2_id) { // Ensure team2_id exists
+                        result2 = (match.winner_id.toString() === match.team2_id.toString()) ? 'win' : 'loss';
+                    }
+                }
+
+                // Explicitly handle BYEs if your backend sets winner_id for byes
+                if (match.team1_id && !match.team2_id && match.winner_id && match.winner_id.toString() === match.team1_id.toString()) {
+                    result1 = 'win'; // Team1 wins by bye
+                }
+                if (match.team2_id && !match.team1_id && match.winner_id && match.winner_id.toString() === match.team2_id.toString()) {
+                    result2 = 'win'; // Team2 wins by bye
+                }
+
+                return {
+                    id: match.id,
+                    stage_id: 0,
+                    group_id: 0,
+                    round_id: match.round_number - 1, // Assuming 0-indexed for library
+
+                    opponent1: match.team1_id ? {
+                        id: match.team1_id.toString(),
+                        score: match.team1_score,
+                        result: result1 // <<<< Ensure 'result' key is always present
+                    } : null,
+
+                    opponent2: match.team2_id ? {
+                        id: match.team2_id.toString(),
+                        score: match.team2_score,
+                        result: result2 // <<<< Ensure 'result' key is always present
+                    } : null,
+                };
+            });
+
+            const viewerData = {
+                participants: participants,
+                stages: [
+                    {
+                        id: 0,
+                        name: @json($tournament->name ?? 'Torneio'),
+                        type: 'single_elimination',
+                        settings: {
+                            seedOrdering: ['natural'],
+                            balanceByes: false // Adjust if your backend doesn't pre-determine byes
+                        }
+                    }
+                ],
+                matches: matchesForViewer,
+            };
+
+            console.log("Data being sent to bracketsViewer.render (with results):", JSON.stringify(viewerData, null, 2));
+
+            window.bracketsViewer.render(viewerData, {
+                selector: "#bracket-container",
+                showSlotsOrigin: true,
+                highlightParticipantOnHover: true,
+                // ... other options
+            });
+            console.log("JS: bracketsViewer.render() called.");
+
+
+        } catch (error) {
+            console.error("JS: Error preparing or rendering bracket:", error);
+            if(bracketContainer) { // Check if bracketContainer is still defined in this scope
+                bracketContainer.innerHTML = '<p class="text-red-500 text-center py-10">Ocorreu um erro ao gerar o bracket. Verifique o console.</p>';
             }
         }
 
-    } else {
-         const bracketContainer = document.getElementById('bracket-container');
-         if(bracketContainer) {
-            bracketContainer.innerHTML = '<p class="text-gray-400">Nenhum confronto disponível para exibir o bracket.</p>';
-         }
-    }
-
-    // Your 5-minute timer logic (if you keep it)
-    @if(isset($currentUserTeamMatchId) && $currentUserTeamMatchId && in_array($tournament->status, ['live', 'round_1_pending']))
-        // console.log('Timer (still active if uncommented) for redirect to match ID: {{ $currentUserTeamMatchId }} (5 min)');
-        // setTimeout(function() {
-        //     window.location.href = "{{ route('matches.show', ['match' => $currentUserTeamMatchId]) }}";
-        // }, 5 * 60 * 1000);
-    @endif
-});
-</script>
+        // Your 5-minute timer logic (if you keep it)
+        @if(isset($currentUserTeamMatchId) && $currentUserTeamMatchId && in_array($tournament->status, ['live', 'round_1_pending']))
+            // console.log('Timer (still active if uncommented) for redirect to match ID: {{ $currentUserTeamMatchId }} (5 min)');
+            // setTimeout(function() {
+            //     window.location.href = "{{ route('matches.show', ['match' => $currentUserTeamMatchId]) }}";
+            // }, 5 * 60 * 1000);
+        @endif
+    });
+    </script>
 @endpush

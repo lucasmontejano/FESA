@@ -15,6 +15,32 @@
     <link rel="stylesheet" href="{{ asset('css/style.min.css') }}">
     <link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://unpkg.com/brackets-viewer@latest/dist/brackets-viewer.min.css" />
+    
+    <style>
+        #bracket-container { /* Your main container for the bracket */
+            /* Example: Set a max-width or other container styles if needed */
+            /* background-color: #1e2030; /* Example: Darker background for the bracket area */
+            padding: 20px;
+            border-radius: 8px;
+        }
+        /* You can override library styles here if necessary, targeting its specific classes */
+        /* For example, to match your dark theme: */
+        .brackets-viewer .match .opponent .name, .brackets-viewer .match .opponent .result {
+            color: #e0e0e0; /* Lighter text for team names/scores */
+        }
+        .brackets-viewer .match .opponent {
+            background-color: #2d3748; /* Darker background for team boxes */
+        }
+        .brackets-viewer .match .opponent.winner .name, .brackets-viewer .match .opponent.winner .result {
+            color: #68d391; /* Greenish for winner */
+        }
+        .brackets-viewer .round-title {
+            color: #a0aec0; /* Lighter color for round titles */
+        }
+        .brackets-viewer .connector {
+            border-color: #4a5568; /* Connector line color */
+        }
+    </style>
 
     @stack('styles') <!-- Optional: for page-specific styles -->
 </head>
