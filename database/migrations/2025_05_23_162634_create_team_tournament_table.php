@@ -12,13 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('team_tournament', function (Blueprint $table) {
-            $table->id(); // Ou use chaves primárias compostas se preferir
+            $table->id();
             $table->foreignId('team_id')->constrained()->onDelete('cascade');
             $table->foreignId('tournament_id')->constrained()->onDelete('cascade');
-            // Você pode adicionar outras colunas aqui se necessário (ex: status da inscrição, data de inscrição)
-            $table->timestamps(); // Opcional, mas útil
+            $table->timestamps(); 
 
-            // Para garantir que uma equipe só possa se inscrever uma vez em um torneio
             $table->unique(['team_id', 'tournament_id']);
         });
     }

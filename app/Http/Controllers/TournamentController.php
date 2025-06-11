@@ -362,11 +362,12 @@ class TournamentController extends Controller
         return back()->with('success', "A inscrição da equipe '{$team->name}' foi cancelada.");
     }
 
-    // In TournamentController.php
     public function showBracket(Tournament $tournament)
     {
 
-        $tournament->load(['teams',
+        $tournament->load([
+            'teams',
+            'champion',
             'matchups' => function ($query) {
                 $query->orderBy('round_number')->orderBy('match_in_round');
             },
@@ -380,7 +381,7 @@ class TournamentController extends Controller
             return [
                 'id' => $match->id,
                 'round_number' => $match->round_number,
-                'match_in_round' => $match->match_in_round, // Useful for ordering/placement
+                'match_in_round' => $match->match_in_round,
                 'team1_id' => $match->team1_id,
                 'team1_name' => $match->team1 ? $match->team1->name : 'BYE / Aguardando',
                 'team1_picture' => $match->team1 && $match->team1->picture ? asset('images/team_pictures/' . $match->team1->picture) : asset('images/default-team-logo.png'),
@@ -391,7 +392,6 @@ class TournamentController extends Controller
                 'team2_score' => $match->team2_score,
                 'winner_id' => $match->winner_id,
                 'status' => $match->status,
-                // Some libraries might need 'next_match_id' or similar to draw lines
             ];
         });
 
@@ -399,18 +399,18 @@ class TournamentController extends Controller
             return ['id' => $team->id, 'name' => $team->name];
         });
 
-        if (!in_array($tournament->status, ['live', 'generating_matches', 'completed', 'round_1_pending'])) { // Moved status check after loading
+        if (!in_array($tournament->status, ['live', 'generating_matches', 'completed', 'round_1_pending'])) {
             abort(404, 'Bracket not available yet or tournament not live.');
         }
 
-        $rounds = $tournament->matchups->groupBy('round_number');
+        $rounds = $tournament->matchups->groupBy('round_number')->sortKeys();
 
         $currentUserTeamMatchId = null;
-        $isParticipant = false; // New flag
+        $isParticipant = false;
 
         if (Auth::check()) {
             $user = Auth::user();
-            $userTeamIds = $user->teams()->pluck('teams.id');
+            $userTeamIds = $user->teams()->pluck('teams.id'); // Certifique-se de que a relação teams() no modelo User está correta
             if ($userTeamIds->isNotEmpty()) {
                 $isParticipant = $tournament->matchups()->where(function ($query) use ($userTeamIds) {
                     $query->whereIn('team1_id', $userTeamIds)
@@ -418,13 +418,12 @@ class TournamentController extends Controller
                 })->exists();
             }
 
-
             foreach($tournament->matchups as $match) {
                 if (
                     ($match->team1_id && $userTeamIds->contains($match->team1_id)) ||
                     ($match->team2_id && $userTeamIds->contains($match->team2_id))
                 ) {
-                    if(in_array($match->status, ['pending', 'live'])){ // Current active/pending match
+                    if(in_array($match->status, ['pending', 'live'])){
                         $currentUserTeamMatchId = $match->id;
                         break;
                     }

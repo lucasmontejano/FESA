@@ -16,10 +16,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id')->constrained('teams')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('role')->default('active'); // 'active' or 'backup'
+            $table->string('role')->default('active');
             $table->timestamps();
 
-            $table->unique(['team_id', 'user_id']); // Ensure a user is only on a team once
+            $table->unique(['team_id', 'user_id']);
         });
     }
 

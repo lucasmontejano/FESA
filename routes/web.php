@@ -74,3 +74,6 @@ Route::get('/tournaments/{tournament}/bracket', [TournamentController::class, 's
 
 // In routes/web.php
 Route::get('/matches/{match}', [MatchController::class, 'show'])->name('matches.show')->middleware('auth');
+
+// Em routes/web.php
+Route::post('/matches/{match}/set-winner', [MatchController::class, 'setWinner'])->name('matches.setWinner')->middleware('auth', 'admin');

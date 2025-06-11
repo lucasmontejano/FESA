@@ -5,8 +5,8 @@
 @section('content')
     <!-- ===========Banner Section start Here========== -->
     <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
-        <section class="bg-gray-900 min-h-screen">
-            <div class="container py-12 px-4 mx-auto">
+        
+            <div class="container">
                 <!-- Main Content Area - Full Width -->
                 <div class="w-full">
                     <!-- Tournaments Header -->
@@ -583,5 +583,5 @@
                 }
             });
         </script>
-    </section>
+    
 @endsection
