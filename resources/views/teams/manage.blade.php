@@ -236,7 +236,6 @@
                 @foreach ($team->members as $member)
                     <li class="member-item">
                         <div class="member-info">
-                            {{-- Assuming $member->profile_picture is available, otherwise provide a default --}}
                             <img src="{{ $member->profile_picture ? asset('images/profile_pictures/' . $member->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}" alt="{{ $member->name }}" class="member-avatar">
                             <div>
                                 <span class="member-name">{{ $member->name }}</span>
@@ -256,7 +255,6 @@
                                     <select name="role" onchange="this.form.submit()" class="styled-select">
                                         <option value="active" {{ $member->pivot->role === 'active' ? 'selected' : '' }}>Ativo</option>
                                         <option value="backup" {{ $member->pivot->role === 'backup' ? 'selected' : '' }}>Reserva</option>
-                                        {{-- Add other roles if applicable --}}
                                     </select>
                                 </form>
 
@@ -275,8 +273,15 @@
             <p class="text-gray-400">Nenhum membro na equipe ainda.</p>
         @endif
 
-        <div class="actions-bar">
-            <a href="{{ route('teams.show', $team->id) }}" class="btn btn-primary">Voltar aos Detalhes</a>
+        <div class="actions-bar flex justify-between items-center">
+                <a href="{{ route('teams.show', $team->id) }}" class="btn btn-primary" style="background-color: #4a5568;">Voltar aos Detalhes</a>
+            <form action="{{ route('teams.destroy', $team->id) }}" method="POST" onsubmit="return confirm('Você tem certeza que deseja deletar este time? Esta ação é irreversível.');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 10px 20px; border-radius: 5px; font-weight: 600; cursor: pointer;">
+                    Deletar Time
+                </button>
+            </form>
         </div>
 
     </div>

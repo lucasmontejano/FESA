@@ -46,7 +46,7 @@
 </head>
 
 <body>
-    <!-- preloader start here -->
+    {{-- <!-- preloader start here -->
     <div class="preloader">
         <div class="preloader-inner">
             <div class="preloader-icon">
@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    <!-- preloader ending here -->
+    <!-- preloader ending here --> --}}
 
     <!-- scrollToTop start here -->
     <a href="{{ url("#") }}" class="scrollToTop"><i class="icofont-rounded-up"></i></a>
@@ -92,6 +92,7 @@
     <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/brackets-viewer@latest/dist/brackets-viewer.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js">
 
     @stack('scripts') <!-- Optional: for page-specific scripts -->
 

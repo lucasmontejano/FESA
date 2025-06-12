@@ -6,62 +6,109 @@
     <!-- ===========Banner Section start Here========== -->
     <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
         
-            <div class="container">
+            <div class="container mx-auto py-12 px-4">
                 <!-- Main Content Area - Full Width -->
                 <div class="w-full">
                     <!-- Tournaments Header -->
                     <div class="mb-8">
-                        <h1 class="text-4xl font-bold text-white mb-6">Encontre Torneiros</h1>
+                        <h1 class="text-4xl font-bold text-white mb-6">Torneiros</h1>
                         
                         <!-- Filter Options -->
                         <div class="flex flex-wrap gap-3">
-                            <button class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Date
-                            </button>     
-                            
-                            <div class="relative group">
-                                <button class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
-                                    Game
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                
-                                <!-- Dropdown menu -->
-                                <div class="absolute z-10 hidden group-hover:block mt-1 w-48 bg-gray-800 rounded-md shadow-lg">
-                                    <div class="py-1">
-                                        <!-- CS2 Option -->
-                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/CS2_logo.svg" alt="CS2" class="w-5 h-5 mr-3">
-                                            Counter-Strike 2
-                                        </a>
-                                        
-                                        <!-- League of Legends Option -->
-                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/League_of_Legends_2019_vector.svg" alt="LoL" class="w-5 h-5 mr-3">
-                                            League of Legends
-                                        </a>
-                                        
-                                        <!-- VALORANT Option -->
-                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Valorant_logo_-_pink_color_version.svg" alt="VALORANT" class="w-5 h-5 mr-3">
-                                            VALORANT
-                                        </a>
-                                        
-                                        <!-- All Games Option -->
-                                        <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 border-t border-gray-700">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                            </svg>
-                                            All Games
-                                        </a>
-                                    </div>
-                                </div>
+                            @php
+                            // Define o status padrão como 'upcoming' se nenhum for passado na URL
+                            $currentStatus = request('status', 'upcoming');
+                        @endphp
+
+                    <div class="relative group" x-data="{ open: false }">
+                        <button @click="open = !open" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
+                            <span>{{ request('game') ? 'Jogo: ' . request('game') : 'Filtrar por Jogo' }}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                        
+                        <div x-show="open" @click.away="open = false" x-cloak
+                            class="absolute z-10 mt-1 w-56 bg-gray-800 rounded-md shadow-lg border border-gray-700">
+                            <div class="py-1">
+                                <a href="{{ route('dashboard', ['status' => request('status', 'upcoming')]) }}" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                    Todos os Jogos
+                                </a>
+
+                                @foreach($games as $game)
+                                    <a href="{{ route('dashboard', ['status' => request('status', 'upcoming'), 'game' => $game]) }}" class="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                        {{ $game }}
+                                    </a>
+                                @endforeach
                             </div>
                         </div>
+                    </div>
+
+                    @foreach($games as $game)
+                    @php
+                        $isActive = request('game') == $game;
+                    @endphp
+                    
+                    {{-- ### INÍCIO DA MUDANÇA ### --}}
+                    <a href="{{-- Se o filtro já estiver ativo, o link limpa o filtro. Senão, ele aplica o filtro. --}}
+                              {{ $isActive 
+                                    ? route('dashboard', ['status' => request('status', 'upcoming')]) 
+                                    : route('dashboard', ['status' => request('status', 'upcoming'), 'game' => $game]) 
+                              }}" 
+                       class="flex items-center px-4 py-2 text-sm rounded-md transition-colors duration-200
+                              {{ $isActive ? 'bg-blue-600/30 text-white ring-2 ring-blue-500' : 'text-gray-300 hover:bg-gray-700' }}">
+                    {{-- ### FIM DA MUDANÇA ### --}}
+                        
+                        {{-- Ícones para cada jogo --}}
+                        @if(strcasecmp($game, 'CS2') === 0)
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/CS2_logo.svg" alt="CS2" class="w-5 h-5 mr-3">
+                        @elseif(strcasecmp($game, 'League of Legends') === 0 || strcasecmp($game, 'LOL') === 0)
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/League_of_Legends_2019_vector.svg" alt="LoL" class="w-5 h-5 mr-3">
+                        @elseif(strcasecmp($game, 'VALORANT') === 0)
+                             <img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Valorant_logo_-_pink_color_version.svg" alt="VALORANT" class="w-5 h-5 mr-3">
+                        @else
+                             <span class="w-5 h-5 mr-3"></span>
+                        @endif
+                        
+                        {{ $game }}
+                    </a>
+                @endforeach
+
+                    <div class="h-8 w-px bg-gray-700 mx-2"></div>
+                    
+                    <a href="{{ route('dashboard', ['status' => 'upcoming', 'game' => request('game')]) }}"
+                    class="px-6 py-3 rounded-md flex items-center transition-colors duration-200
+                            {{ $currentStatus === 'upcoming' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Próximos
+                    </a>
+
+                    <a href="{{ route('dashboard', ['status' => 'completed', 'game' => request('game')]) }}"
+                    class="px-6 py-3 rounded-md flex items-center transition-colors duration-200
+                            {{ $currentStatus === 'completed' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        Finalizados
+                    </a>
+
+                    <a href="{{ route('dashboard', ['status' => 'all', 'game' => request('game')]) }}"
+                    class="px-6 py-3 rounded-md flex items-center transition-colors duration-200
+                            {{ $currentStatus === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-800 text-gray-300 hover:bg-gray-700' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                        Todos
+                    </a>
+
+                    {{-- @auth
+                        @if(auth()->user()->isAdmin())
+                        <div class="h-8 w-px bg-gray-700 mx-2"></div>
+                            <div>
+                                <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md flex items-center transition-colors duration-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                    Criar Torneio
+                                </button>
+                            </div>
+                        @endif
+                    @endauth --}}
+            </div>
+        
                     </div>
 
                     <!-- Error/Success Messages -->
@@ -294,6 +341,7 @@
                                                 class="w-full bg-gray-700 text-white rounded-lg p-2"
                                                 required>
                                             <option value="" disabled selected>Selecione uma opção</option>
+                                            <option value="16">8 equipes</option>
                                             <option value="16">16 equipes</option>
                                             <option value="32">32 equipes</option>
                                             <option value="64">64 equipes</option>
@@ -301,33 +349,13 @@
                                         </select>
                                     </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <!-- Start Date -->
-                                        <div>
-                                            <label class="block text-gray-300 mb-1">Início das Inscrições</label>
-                                            <input type="date" name="start_date" 
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2" 
-                                                min="{{ now()->format('Y-m-d') }}"
-                                                required>
-                                            <p class="text-gray-400 text-xs mt-1">A partir de hoje</p>
-                                        </div>
-                                        
-                                        <!-- End Date -->
-                                        <div>
-                                            <label class="block text-gray-300 mb-1">Fim das Inscrições</label>
-                                            <input type="date" name="end_date" 
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2" 
-                                                min="{{ now()->addDay()->format('Y-m-d') }}"
-                                                required>
-                                            <p class="text-gray-400 text-xs mt-1">Pelo menos 1 dia após o início das inscrições</p>
-                                        </div>
-                                        
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">                                       
                                         <!-- Tournament Date -->
                                         <div>
                                             <label class="block text-gray-300 mb-1">Data do Torneio</label>
                                             <input type="date" name="tournament_date" 
                                                 class="w-full bg-gray-700 text-white rounded-lg p-2" 
-                                                min="{{ now()->addDays(2)->format('Y-m-d') }}"
+                                                min="{{ now()->format('Y-m-d') }}"
                                                 required>
                                             <p class="text-gray-400 text-xs mt-1">Pelo menos 1 dia após o fim das inscrições</p>
                                         </div>
@@ -428,8 +456,6 @@
             }
         
             document.addEventListener('DOMContentLoaded', function() {
-                const startDateInput = document.querySelector('input[name="start_date"]');
-                const endDateInput = document.querySelector('input[name="end_date"]');
                 const tournamentDateInput = document.querySelector('input[name="tournament_date"]');
                 
                 const currentYear = new Date().getFullYear();
@@ -484,42 +510,14 @@
                 };
                 
                 // Apply to all date inputs
-                setupDateInput(startDateInput);
-                setupDateInput(endDateInput);
                 setupDateInput(tournamentDateInput);
 
                 // Date relationship validation
-                startDateInput.addEventListener('change', function() {
-                    if (this.value && isValidDate(this.value)) {
-                        const startDate = new Date(this.value);
-                        const minEndDate = new Date(startDate);
-                        minEndDate.setDate(minEndDate.getDate() + 1);
-                        
-                        endDateInput.min = minEndDate.toISOString().split('T')[0];
-                        
-                        if (endDateInput.value && new Date(endDateInput.value) < minEndDate) {
-                            endDateInput.value = '';
-                        }
-                    }
-                });
-
-                endDateInput.addEventListener('change', function() {
-                    if (this.value && isValidDate(this.value)) {
-                        const endDate = new Date(this.value);
-                        const minTournamentDate = new Date(endDate);
-                        minTournamentDate.setDate(minTournamentDate.getDate() + 1);
-                        
-                        tournamentDateInput.min = minTournamentDate.toISOString().split('T')[0];
-                        
-                        if (tournamentDateInput.value && new Date(tournamentDateInput.value) < minTournamentDate) {
-                            tournamentDateInput.value = '';
-                        }
-                    }
-                });
+                
 
                 // Form submission validation
                 document.querySelector('form').addEventListener('submit', function(e) {
-                    const dateInputs = [startDateInput, endDateInput, tournamentDateInput];
+                    const dateInputs = [tournamentDateInput];
                     let isValid = true;
                     
                     dateInputs.forEach(input => {

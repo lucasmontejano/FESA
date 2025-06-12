@@ -79,9 +79,8 @@
        {{-- This block replaces your original code snippet, adding the validation --}}
 
 @php
-    // First, we check if the registration period is still open.
-    // This assumes your Tournament model has 'end_date' cast to a datetime object.
-    $isRegistrationOpen = now()->lt($tournament->tournament_date);
+    $nowInSaoPaulo = \Carbon\Carbon::now('America/Sao_Paulo');
+    $isRegistrationOpen = $nowInSaoPaulo->lt($tournament->time);
 @endphp
 
 {{--
@@ -335,10 +334,6 @@
             <h2 class="text-xl font-bold text-white">JOGO</h2>
             <p>{{ $tournament->game }}</p>
 
-            <h2 class="text-xl font-bold text-white mt-6">DATA</h2>
-            <p>{{ $tournament->start_date->format('l, F jS Y') }}</p>
-            <p>{{ $tournament->start_date->format('g:i A T') }}</p>
-
             <h2 class="text-xl font-bold text-white mt-6">Format</h2>
             <p>{{ $tournament->format }}</p>
             <p>Pre-Made Team & Free Agent Registrations are allowed</p>
@@ -398,6 +393,44 @@
             </div>
 
     </div>
-
     </section>
+
+    @if($tournament->status === 'registration_open')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Função que verifica o status do torneio
+    const checkTournamentStatus = async () => {
+        try {
+            // Chama a rota na web.php para obter o status
+            const response = await fetch(`/tournaments/{{ $tournament->id }}/status`);
+            
+            if (!response.ok) {
+                console.error('Erro ao buscar status do torneio. Verificação interrompida.');
+                clearInterval(pollingInterval); // Para a verificação se houver um erro de rede
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Este log deve aparecer a cada 10 segundos no seu console
+            console.log('Verificando... Status atual do torneio:', data.status);
+
+            // Se o status mudou para 'live' (ou outro estado ativo), recarrega a página!
+            if (data.status === 'live' || data.status === 'generating_matches') {
+                console.log('O torneio começou! Redirecionando para o bracket...');
+                clearInterval(pollingInterval); // Para a verificação antes de redirecionar
+                window.location.reload(); // Recarrega a página
+            }
+
+        } catch (error) {
+            console.error('Falha na requisição de polling. Verificação interrompida.', error);
+            clearInterval(pollingInterval); // Para a verificação se houver um erro de script
+        }
+    };
+
+    // Inicia a verificação periódica a cada 10 segundos (10000 milissegundos)
+    const pollingInterval = setInterval(checkTournamentStatus, 10000);
+});
+</script>
+@endif
 @endsection

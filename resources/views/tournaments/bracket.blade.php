@@ -83,11 +83,11 @@
                                             $team2_extra_class = ($match->winner_id == $match->team2_id) ? 'winner' : (($match->winner_id) ? 'loser' : '');
                                         @endphp
                                         <div class="team {{ $team1_extra_class }}">
-                                            <span>{{ $match->team1->name ?? 'BOT' }}</span>
+                                            <span>{{ $match->team1->name ?? 'N/A' }}</span>
                                             <span class="score">{{ $match->team1_score ?? '-' }}</span>
                                         </div>
                                         <div class="team {{ $team2_extra_class }}">
-                                            <span>{{ $match->team2->name ?? 'BOT' }}</span>
+                                            <span>{{ $match->team2->name ?? 'N/A' }}</span>
                                             <span class="score">{{ $match->team2_score ?? '-' }}</span>
                                         </div>
 

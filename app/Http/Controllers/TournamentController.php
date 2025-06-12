@@ -42,38 +42,9 @@ class TournamentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'game' => 'required|string',
-            'start_date' => [
-                'required',
-                'date',
-                'after_or_equal:today',
-                function ($attribute, $value, $fail) use ($currentYear, $nextYear) {
-                    $year = date('Y', strtotime($value));
-                    if ($year != $currentYear && $year != $nextYear) {
-                        $fail('The start date must be within '.$currentYear.' or '.$nextYear);
-                    }
-                }
-            ],
-            'end_date' => [
-                'required',
-                'date',
-                'after:start_date',
-                function ($attribute, $value, $fail) use ($currentYear, $nextYear) {
-                    $year = date('Y', strtotime($value));
-                    if ($year != $currentYear && $year != $nextYear) {
-                        $fail('The end date must be within '.$currentYear.' or '.$nextYear);
-                    }
-                }
-            ],
             'tournament_date' => [
                 'required',
                 'date',
-                'after:end_date',
-                function ($attribute, $value, $fail) use ($currentYear, $nextYear) {
-                    $year = date('Y', strtotime($value));
-                    if ($year != $currentYear && $year != $nextYear) {
-                        $fail('The tournament date must be within '.$currentYear.' or '.$nextYear);
-                    }
-                }
             ],
             'time' => 'required|date_format:H:i',
             'participant_option' => 'required|in:preset,custom',
@@ -122,8 +93,6 @@ class TournamentController extends Controller
         Tournament::create([
             'name' => $validated['name'],
             'game' => $validated['game'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
             'tournament_date' => $validated['tournament_date'],
             'time' => $validated['time'],
             'max_participants' => $validated['max_participants'],

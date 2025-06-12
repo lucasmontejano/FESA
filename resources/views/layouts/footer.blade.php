@@ -10,7 +10,7 @@
                                 <img src="{{ asset("/images/footer/icons/01.png") }}" alt="Phone-icon">
                             </div>
                             <div class="lab-content">
-                                <span>Telefone : </span>
+                                <span>Telefone : (19)3806-2181 ou (19)3806-3139</span>
                             </div>
                         </div>
                     </div>
@@ -22,7 +22,7 @@
                                 <img src="{{ asset("/images/footer/icons/02.png") }}" alt="email-icon">
                             </div>
                             <div class="lab-content">
-                                <span>Email : </span>
+                                <span>Email : f163acad@cps.sp.gov.br</span>
                             </div>
                         </div>
                     </div>

@@ -15,16 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('game'); 
-            $table->text('description')->nullable();
-            $table->date('start_date'); 
-            $table->date('end_date');    
+            $table->text('description')->nullable();    
             $table->integer('max_participants');
             $table->integer('participants_count')->default(0);  
             $table->string('banner')->nullable(); 
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-
-            $table->index('start_date');
             $table->index('game');
         });
     }

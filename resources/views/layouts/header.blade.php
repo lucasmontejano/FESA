@@ -15,8 +15,11 @@
                         <div class="mobile-logo d-lg-none">
                             <a href="{{ url("/") }}"><img src="{{ asset("/images/logo/logo.png") }}" alt="logo"></a>
                         </div>
+                        
                         <div class="menu-area">
+                            
                             <ul class="menu">
+                                
                                 <li><a href="{{ url("/") }}">Home</a></li>
 
                                 
@@ -28,18 +31,7 @@
                                     @auth
                                         <a href="{{ Auth::check() ? route('users.show', Auth::user()->name) : route('login') }}">Perfil</a>
                                     @endauth
-                                </li>
-
-                                <li>
-                                    @auth
-                                        <a href="{{ Auth::check() ? route('users.show', Auth::user()->name) : route('login') }}"
-                                        id="headerLinkToMyTeamsTab" {{-- ADDED THIS ID --}}
-                                        class="your-existing-header-link-styles"> {{-- Make sure to keep any existing classes --}}
-                                            Meus Times
-                                        </a>
-                                    @endauth
-                                </li>
-
+                                </li>    
                                 
                             </ul>
 
@@ -59,11 +51,7 @@
                             @endguest
 
                             @auth
-                                <a href="{{ route('users.show', Auth::user()->name) }}" class="login" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.2rem; border-radius: 6px; background-color: rgba(255, 255, 255, 0.9); transition: all 0.3s ease; font-size: 1.05rem; position: relative; overflow: hidden; backdrop-filter: blur(4px); box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                                    <i class="icofont-ui-home" style="background: linear-gradient(45deg, #3b82f6, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.2em;"></i>
-                                    <span style="font-weight: 600; background: linear-gradient(45deg, #3b82f6, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Perfil</span>
-                                    <span style="position: absolute; inset: 0; background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(236, 72, 153, 0.2)); opacity: 0; transition: opacity 0.3s ease;"></span>
-                                </a>
+                                
 
                                 <form method="POST" action="{{ route('logout') }}" style="display:inline;">
                                     @csrf

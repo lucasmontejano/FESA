@@ -6,10 +6,10 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\TournamentStatusController;
 use App\Http\Controllers\MatchController;
-use App\Http\Controllers\ProfileNavigationController;
 use App\Models\Tournament;
+use Illuminate\Http\Request;
 
 // Public Routes
 Route::get('/', function () {
@@ -23,11 +23,40 @@ Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-// Dashboard Route (with tournaments data)
-Route::get('/dashboard', function () {
-    $tournaments = Tournament::with('creator')->latest()->get();
-    return view('dashboard', compact('tournaments'));
+Route::get('/dashboard', function (Request $request) {
+    $query = Tournament::query();
+
+    // Pega o valor do filtro de status da URL, com 'upcoming' como padrão
+    $statusFilter = $request->input('status', 'upcoming');
+
+    // 1. APLICA O FILTRO DE STATUS
+    if ($statusFilter === 'upcoming') {
+        // 'upcoming' inclui torneios com registro aberto e os que estão ao vivo
+        $query->whereIn('status', ['registration_open', 'generating_matches', 'live']);
+        $query->orderBy('tournament_date', 'asc'); // Ordena os próximos por data de início
+    } elseif ($statusFilter === 'completed') {
+        // 'completed' inclui torneios finalizados e cancelados
+        $query->whereIn('status', ['completed', 'cancelled']);
+        $query->orderBy('tournament_date', 'desc'); // Ordena os finalizados do mais recente para o mais antigo
+    }
+    // Se o status for 'all' ou qualquer outro valor, nenhum filtro de status é aplicado, mostrando todos.
+
+    // 2. APLICA O FILTRO DE JOGO (se existir)
+    if ($request->has('game')) {
+        $query->where('game', $request->input('game'));
+    }
+
+    // Carrega os torneios com a relação do criador
+    $tournaments = $query->with('creator')->get();
+
+    // Pega todos os jogos distintos para popular o dropdown dinamicamente
+    $games = Tournament::select('game')->distinct()->orderBy('game')->pluck('game');
+
+    // Retorna a view com os dados filtrados e ordenados
+    return view('dashboard', compact('tournaments', 'games'));
+
 })->middleware('auth')->name('dashboard');
+
 
 // Tournament Routes
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -53,6 +82,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/team-invite/{token}', [TeamController::class, 'showInvite'])->name('teams.showInvite');
     Route::post('/team-invite/{token}', [TeamController::class, 'acceptInvite'])->name('teams.acceptInvite');
     Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])->name('teams.updatePositions');
+    Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+    Route::delete('/teams/{team}/leave', [TeamController::class, 'leave'])->name('teams.leave');
 });
 
 // Profile Routes
@@ -77,3 +108,7 @@ Route::get('/matches/{match}', [MatchController::class, 'show'])->name('matches.
 
 // Em routes/web.php
 Route::post('/matches/{match}/set-winner', [MatchController::class, 'setWinner'])->name('matches.setWinner')->middleware('auth', 'admin');
+
+Route::get('/tournaments/{tournament}/status', [TournamentStatusController::class, 'show'])
+    ->name('tournaments.status') // Dê um nome à rota (boa prática)
+    ->middleware('auth'); // Garante que apenas usuários logados podem acessá-la

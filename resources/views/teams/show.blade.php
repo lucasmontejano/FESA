@@ -231,31 +231,59 @@
             <div class="profile-card">
                 <img class="profile-avatar" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-picture.jpg') }}" alt="{{ $team->name }}">
                 <div class="profile-info">
-                    <div class="profile-name">{{ $team->name }}</div>
-                    <div class="profile-description">Líder: {{ $team->leader->name }}</div>
-                    @auth
-                        @if (Auth::id() === $team->leader_id)
-                            <a href="{{ route('teams.manage', $team->id) }}" class="btn-primary">Gerenciar Time</a>
-                            @can('update', $team)
-                            <button onclick="generateInviteLink('{{ $team->id }}')" class="btn-primary">
-                                Gerar convite
-                            </button>
+                <div class="profile-name">{{ $team->name }}</div>
+                <div class="profile-description">Líder: {{ $team->leader->name }}</div>
 
-                            <div id="invite-link-container-{{ $team->id }}" style="display: none; margin-top: 10px;">
-                                <div class="input-group">
-                                    <input type="text" id="invite-link-{{ $team->id }}" class="form-control" readonly>
-                                    <button class="btn btn-outline-secondary" onclick="copyInviteLink({{ $team->id }})">
-                                        Copiar
+                {{-- Contêiner para os botões de ação --}}
+                <div class="flex justify-between items-center mt-4">
+                    
+                    {{-- Botões existentes à esquerda --}}
+                    <div>
+                        @auth
+                            @if (Auth::id() === $team->leader_id)
+                                <a href="{{ route('teams.manage', $team->id) }}" class="btn btn-primary" style="margin-right: 10px;">Gerenciar Time</a>
+                                @can('update', $team)
+                                <button onclick="generateInviteLink('{{ $team->id }}')" class="btn-primary">
+                                    Gerar convite
+                                </button>
+                                @endcan
+                            @endif
+                        @endauth
+                    </div>
+
+                    {{-- Novo botão "Sair do Time" à direita --}}
+                    <div>
+                        @auth
+                            {{-- Condição: Mostra o botão apenas se o usuário logado for membro E NÃO for o líder --}}
+                            @if ($team->members->contains(Auth::user()) && Auth::id() !== $team->leader_id)
+                                <form action="{{ route('teams.leave', $team->id) }}" method="POST" onsubmit="return confirm('Você tem certeza que deseja sair do time \'{{ $team->name }}\'?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger" style="background-color: #e53e3e; color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                        Sair do Time
                                     </button>
-                                </div>
-                                <small class="text-muted" id="invite-expires-{{ $team->id }}"></small>
-                                <small class="text-muted d-block">This link can be used by multiple players</small>
-                            </div>
-                            @endcan
-                        @endif
-                    @endauth
+                                </form>
+                            @endif
+                        @endauth
+                    </div>
+
                 </div>
+
+                {{-- O contêiner do link de convite (lógica JS não precisa mudar) --}}
+                @can('update', $team)
+                    <div id="invite-link-container-{{ $team->id }}" style="display: none; margin-top: 10px;">
+                        <div class="input-group">
+                            <input type="text" id="invite-link-{{ $team->id }}" class="form-control" readonly>
+                            <button class="btn btn-outline-secondary" onclick="copyInviteLink({{ $team->id }})">
+                                Copiar
+                            </button>
+                        </div>
+                        <small class="text-muted" id="invite-expires-{{ $team->id }}"></small>
+                        <small class="text-muted d-block">This link can be used by multiple players</small>
+                    </div>
+                @endcan
             </div>
+        </div>
 
             {{-- Roster --}}
             <div>

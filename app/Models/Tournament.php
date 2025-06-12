@@ -18,19 +18,12 @@ class Tournament extends Model
         'max_participants', 
         'user_id', 
         'game', 
-        'start_date', //Registration start date
-        'end_date', //Registration end date
         'tournament_date', // Date of the tournament
         'time', // Time of the tournament
         'rules',
         'prizes',
         'banner',
         'status',
-    ];
-
-    protected $casts = [
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
     ];
 
     public function creator() // Renomeei de 'user' para 'creator' para evitar confusão com o usuário autenticado

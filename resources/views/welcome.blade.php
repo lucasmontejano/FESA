@@ -5,14 +5,14 @@
 @section('content')
     <style>
         .banner-section {
-            max-width: 1000px; /* ADJUSTED */
+            max-width: 1500px; /* ADJUSTED */
             margin: 40px auto; /* ADJUSTED for overall spacing */
             padding: 20px;
         }
 
         .carousel-wrapper {
             position: relative;
-            height: 480px; /* ADJUSTED */
+            height: 720px; /* ADJUSTED */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -137,39 +137,52 @@
             <section class="banner-section">
                 <div class="carousel-wrapper">
                     <div class="compact-carousel">
+                        
+                        <div class="banner-slide"
+                             data-game-title="Participe dos torneios e concorra a prêmios!"
+                             data-detailed-description="Domine o Rift em nossos torneios de League of Legends! Oferecemos formatos Solo/Duo e Equipes Fechadas 5v5, com fases de grupos e playoffs emocionantes. Prepare suas melhores estratégias e campeões para competir por prêmios incríveis e glória eterna. Junte-se à batalha!">
+                            <img loading="lazy" src="{{ asset('images/banner/FESA-banner.jpg') }}" alt="LoL Tournaments" />
+                            <div class="banner-caption">
+                                <span class="banner-tag" style="background: #1DA1F2;">Em Alta</span>
+                                <h3 class="banner-title">Participe Já!</h3>
+                                <p class="banner-description">Campeonatos semestrais dos seus jogos favoritos!</p>
+                                <a href="/dashboard" class="banner-button" style="background: #1DA1F2;">Participe Já</a>
+                            </div>
+                        </div>
+
                         <div class="banner-slide"
                              data-game-title="League of Legends"
-                             data-detailed-description="Domine o Rift em nossos torneios de League of Legends! Oferecemos formatos Solo/Duo e Equipes Fechadas 5v5, com fases de grupos e playoffs emocionantes. Prepare suas melhores estratégias e campeões para competir por prêmios incríveis e glória eterna. Junte-se à batalha!">
+                             data-detailed-description="Domine o Rift em nossos torneios de League of Legends! Oferecemos formatos Solo/Duo e Equipes Fechadas 5v5, com fases de grupos e playoffs emocionantes. Prepare suas melhores estratégias e campeões para competir por prêmios incríveis e glória eterna. Participe à batalha!">
                             <img loading="lazy" src="{{ asset('images/banner/lol-banner.jpg') }}" alt="LoL Tournaments" />
                             <div class="banner-caption">
-                                <span class="banner-tag" style="background: #1DA1F2;">Featured</span>
+                                <span class="banner-tag" style="background: #1DA1F2;">Campeonato</span>
                                 <h3 class="banner-title">League of Legends</h3>
-                                <p class="banner-description">Campeonatos Semestrais!</p>
-                                <a href="/tournaments?game=League+of+Legends" class="banner-button" style="background: #1DA1F2;">Join Now</a>
+                                <p class="banner-description">Campeonatos semestrais de League of Legends!</p>
+                                <a href="/dashboard?game=LOL" class="banner-button" style="background: #1DA1F2;">Cadastre-se Já</a>
                             </div>
                         </div>
 
                         <div class="banner-slide"
                              data-game-title="Valorant"
                              data-detailed-description="Mostre sua precisão tática nos campeonatos de Valorant! Participe em confrontos 5v5, estilo Spike Rush ou Competitivo padrão. Ascenda nos rankings, desafie os melhores e conquiste recompensas exclusivas. Sua mira faz a diferença!">
-                            <img loading="lazy" src="{{ asset('images/banner/valorant-banner.jpg') }}" alt="Valorant Tournaments" />
+                            <img loading="lazy" src="{{ asset('images/banner/valorant-banner.jpg') }}" alt="Valorant dashboard" />
                             <div class="banner-caption">
-                                <span class="banner-tag" style="background: #FF4655;">New Season</span>
+                                <span class="banner-tag" style="background: #FF4655;">Campeonato</span>
                                 <h3 class="banner-title">Valorant</h3>
-                                <p class="banner-description">Campeonatos Semestrais!</p>
-                                <a href="/tournaments?game=Valorant" class="banner-button" style="background: #FF4655;">Compete Now</a>
+                                <p class="banner-description">Campeonatos semestrais de Valorant!</p>
+                                <a href="/dashboard?game=VALORANT" class="banner-button" style="background: #FF4655;">Participe Agora</a>
                             </div>
                         </div>
 
                         <div class="banner-slide"
                              data-game-title="Counter-Strike 2"
                              data-detailed-description="Ação frenética e estratégia de ponta nos torneios de CS2! Formatos clássicos de Defuse e Wingman. Monte sua equipe, refine suas táticas e dispute prêmios em dinheiro e skins raras. A lenda do CS continua aqui!">
-                            <img loading="lazy" src="{{ asset('images/banner/cs2-banner.png') }}" alt="CS2 Tournaments" />
+                            <img loading="lazy" src="{{ asset('images/banner/cs2-banner.png') }}" alt="CS2 dashboard" />
                             <div class="banner-caption">
-                                <span class="banner-tag" style="background: #F97803;">Premium</span>
+                                <span class="banner-tag" style="background: #F97803;">Campeonato</span>
                                 <h3 class="banner-title">Counter-Strike 2</h3>
-                                <p class="banner-description">Campeonatos Semestrais!</p>
-                                <a href="/tournaments?game=Counter-Strike+2" class="banner-button" style="background: #F97803;">Register Team</a>
+                                <p class="banner-description">Campeonatos semestrais de Counter Strike 2!</p>
+                                <a href="/dashboard?game=CS2" class="banner-button" style="background: #F97803;">Crie Sua Equipe</a>
                             </div>
                         </div>
                     </div>

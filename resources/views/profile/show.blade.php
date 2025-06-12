@@ -392,42 +392,42 @@
 
         {{-- Teams Tab --}}
         <div id="teams" class="tab-section {{ ($activeTab ?? 'teams') === 'teams' ? 'active' : '' }}"> {{-- Assuming you might use the $activeTab default logic we discussed --}}
-    {{-- Flex container for Title and Button --}}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h3 class="section-title" style="margin-bottom: 0;">My Teams</h3>
-        <a href="{{ route('teams.create') }}" class="btn-create-team">
-            Criar Time
-        </a>
-    </div>
+            {{-- Flex container for Title and Button --}}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="section-title" style="margin-bottom: 0;">My Teams</h3>
+                <a href="{{ route('teams.create') }}" class="btn-create-team">
+                    Criar Time
+                </a>
+            </div>
 
-    @if ($user->teams->count() > 0)
-        <ul class="list-block">
-            @foreach ($user->teams as $team)
-                <li class="list-item">
-                    <div class="team-item" style="display: flex; align-items: center;"> {{-- Added style for better item layout --}}
-                        <img class="team-photo" 
-                             src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/default-team-logo.png') }}" 
-                             alt="{{ $team->name }}" 
-                             style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover;"> {{-- Example styling for team photo --}}
-                        <div class="team-info">
-                            <a href="{{ route('teams.show', $team->id) }}" style="font-size: 18px; color: #4da6ff; text-decoration: none; font-weight: 600;">
-                                {{ $team->name }}
-                            </a>
-                            <span style="font-size: 14px; color: #aaa; display: block;"> {{-- Made span a block for clarity --}}
-                                ({{ $team->pivot->role === 'active' ? 'Titular' : ($team->pivot->role === 'backup' ? 'Reserva' : $team->pivot->role) }}) {{-- Assuming roles like 'active', 'backup' --}}
-                            </span>
-                        </div>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <div class="empty-state">
-            <div class="empty-state-icon">👥</div>
-            <p class="text-light">{{ $user->name }} is not currently in any teams.</p>
+            @if ($user->teams->count() > 0)
+                <ul class="list-block">
+                    @foreach ($user->teams as $team)
+                        <li class="list-item">
+                            <div class="team-item" style="display: flex; align-items: center;"> {{-- Added style for better item layout --}}
+                                <img class="team-photo" 
+                                    src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/default-team-logo.png') }}" 
+                                    alt="{{ $team->name }}" 
+                                    style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover;"> {{-- Example styling for team photo --}}
+                                <div class="team-info">
+                                    <a href="{{ route('teams.show', $team->id) }}" style="font-size: 18px; color: #4da6ff; text-decoration: none; font-weight: 600;">
+                                        {{ $team->name }}
+                                    </a>
+                                    <span style="font-size: 14px; color: #aaa; display: block;"> {{-- Made span a block for clarity --}}
+                                        ({{ $team->pivot->role === 'active' ? 'Titular' : ($team->pivot->role === 'backup' ? 'Reserva' : $team->pivot->role) }}) {{-- Assuming roles like 'active', 'backup' --}}
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p class="text-light">{{ $user->name }} is not currently in any teams.</p>
+                </div>
+            @endif
         </div>
-    @endif
-</div>
     </div>
 </section>
 

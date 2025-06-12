@@ -18,8 +18,7 @@ class StartDueTournaments extends Command
 
     public function handle()
     {
-
-        $now = Carbon::now();
+        $now = \Carbon\Carbon::now('America/Sao_Paulo');
         $this->info("Verificando torneios agendados... (" . $now->toDateTimeString() . ")");
 
         $tournamentsToStart = Tournament::where('status', 'registration_open')

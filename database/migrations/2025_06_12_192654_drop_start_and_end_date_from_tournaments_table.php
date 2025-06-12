@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tournaments', function (Blueprint $table) {
-            $table->date('tournament_date')
-                  ->nullable()
-                  ->after('description');
+            //
         });
     }
 
@@ -24,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tournaments', function (Blueprint $table) {
-            $table->dropColumn('tournament_date');
+            $table->dropColumn('start_date');
+            $table->dropColumn('end_date');
         });
     }
 };

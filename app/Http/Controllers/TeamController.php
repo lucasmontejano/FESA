@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\TeamInvite;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class TeamController extends Controller
 {   
@@ -192,46 +193,46 @@ class TeamController extends Controller
         ]);
     }
 
-public function acceptInvite($token)
-{
-    $invite = TeamInvite::where('token', $token)
-                                  ->where('expires_at', '>', now())
-                                  ->with('team')
-                                  ->first();
+    public function acceptInvite($token)
+    {
+        $invite = TeamInvite::where('token', $token)
+                                    ->where('expires_at', '>', now())
+                                    ->with('team')
+                                    ->first();
 
-    if (!$invite) {
-        return redirect()->route('teams.index')->with('error', 'Link de convite inválido.');
+        if (!$invite) {
+            return redirect()->route('teams.index')->with('error', 'Link de convite inválido.');
+        }
+
+        if ($invite->expires_at->isPast()) {
+            return redirect()->route('teams.index')->with('error', 'Este link de convite expirou.');
+        }
+
+        if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
+            return redirect()->route('teams.index')->with('error', 'Este link de convite já atingiu o número máximo de usos.');
+        }
+
+        $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
+        $invite->team->members()->attach(auth()->id(), [
+            'role' => $role,
+            'joined_at' => now()
+        ]);
+
+        //$invite->increment('uses');
+        $invite->uses = $invite->uses + 1;
+        $invite->timestamps = false; 
+        $invite->save(['touch' => false]); 
+        $invite->timestamps = true;
+
+        $invite->refresh();
+
+        if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
+            $invite->delete(); // Comente temporariamente para inspeção no BD
+        }
+
+        return redirect()->route('teams.show', $invite->team_id)
+            ->with('success', "Você entrou na equipe '{$invite->team->name}' como {$role}!");
     }
-
-    if ($invite->expires_at->isPast()) {
-        return redirect()->route('teams.index')->with('error', 'Este link de convite expirou.');
-    }
-
-    if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-        return redirect()->route('teams.index')->with('error', 'Este link de convite já atingiu o número máximo de usos.');
-    }
-
-    $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
-    $invite->team->members()->attach(auth()->id(), [
-        'role' => $role,
-        'joined_at' => now()
-    ]);
-
-    //$invite->increment('uses');
-    $invite->uses = $invite->uses + 1;
-    $invite->timestamps = false; 
-    $invite->save(['touch' => false]); 
-    $invite->timestamps = true;
-
-    $invite->refresh();
-
-    if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-        $invite->delete(); // Comente temporariamente para inspeção no BD
-    }
-
-    return redirect()->route('teams.show', $invite->team_id)
-        ->with('success', "Você entrou na equipe '{$invite->team->name}' como {$role}!");
-}
 
 
     public function showInvite($token)
@@ -244,18 +245,86 @@ public function acceptInvite($token)
     }
 
     public function updatePositions(Request $request, Team $team)
-{
-    $this->authorize('update', $team);
-    
-    $memberIds = $request->input('member_ids');
-    
-    // Update all members to backup first
-    $team->members()->updateExistingPivot($memberIds, ['role' => 'backup']);
-    
-    // Update first 4 members to active
-    $activeMembers = array_slice($memberIds, 0, 4);
-    $team->members()->updateExistingPivot($activeMembers, ['role' => 'active']);
-    
-    return response()->json(['success' => true]);
-}
+    {
+        $this->authorize('update', $team);
+        
+        $memberIds = $request->input('member_ids');
+        
+        // Update all members to backup first
+        $team->members()->updateExistingPivot($memberIds, ['role' => 'backup']);
+        
+        // Update first 4 members to active
+        $activeMembers = array_slice($memberIds, 0, 4);
+        $team->members()->updateExistingPivot($activeMembers, ['role' => 'active']);
+        
+        return response()->json(['success' => true]);
+    }
+
+    public function destroy(Team $team)
+    {
+        // 1. Autorização: Garante que apenas o líder do time pode deletá-lo.
+        // Se você usa Policies, pode usar: $this->authorize('delete', $team);
+        if (Auth::id() !== $team->leader_id) {
+            abort(403, 'AÇÃO NÃO AUTORIZADA.');
+        }
+
+        try {
+            // 2. Desanexar Relações (Boa prática para evitar erros de constraint)
+            // Remove todas as inscrições do time em torneios.
+            $team->tournaments()->detach();
+            
+            // Remove todos os membros do time da tabela pivot 'team_members'.
+            $team->members()->detach();
+
+            // Deleta todos os convites pendentes para este time.
+            $team->invites()->delete();
+
+            // 3. Deletar a Imagem do Time (se existir)
+            if ($team->picture) {
+                $imagePath = public_path('images/team_pictures/' . $team->picture);
+                if (File::exists($imagePath)) {
+                    File::delete($imagePath);
+                }
+            }
+
+            // 4. Deletar o Time
+            $team->delete();
+
+            // 5. Redirecionar para o dashboard ou perfil com uma mensagem de sucesso.
+            return redirect()->route('dashboard')->with('success', 'O time foi deletado com sucesso.');
+
+        } catch (\Exception $e) {
+            // Em caso de qualquer erro inesperado, redireciona com uma mensagem de erro.
+            Log::error("Erro ao deletar o time ID {$team->id}: " . $e->getMessage());
+            return back()->with('error', 'Ocorreu um erro ao tentar deletar o time. Por favor, tente novamente.');
+        }
+    }   
+
+    public function leave(Team $team)
+    {
+        $user = Auth::user();
+
+        // 1. Garante que o líder não pode usar esta função para sair do próprio time
+        if ($user->id === $team->leader_id) {
+            return back()->with('error', 'O líder não pode abandonar o time. Transfira a liderança ou delete o time na área de gerenciamento.');
+        }
+
+        // 2. Garante que o usuário é de fato um membro antes de tentar sair
+        if (!$team->members()->where('user_id', $user->id)->exists()) {
+            return back()->with('info', 'Você não é membro deste time.');
+        }
+
+        try {
+            // 3. Remove a associação do usuário com o time na tabela pivot
+            $team->members()->detach($user->id);
+
+            // 4. Redireciona o usuário para seu perfil com uma mensagem de sucesso
+            return redirect()->route('users.show', ['user' => $user->name])->with('success', "Você saiu do time '{$team->name}'.");
+
+        } catch (\Exception $e) {
+            // Log do erro e mensagem genérica para o usuário
+            Log::error("Erro ao sair do time ID {$team->id} para o usuário ID {$user->id}: " . $e->getMessage());
+            return back()->with('error', 'Ocorreu um erro ao tentar sair do time. Por favor, tente novamente.');
+        }
+    }
 }
