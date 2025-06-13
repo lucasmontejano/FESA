@@ -402,25 +402,35 @@
 
             @if ($user->teams->count() > 0)
                 <ul class="list-block">
-                    @foreach ($user->teams as $team)
-                        <li class="list-item">
-                            <div class="team-item" style="display: flex; align-items: center;"> {{-- Added style for better item layout --}}
-                                <img class="team-photo" 
-                                    src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/default-team-logo.png') }}" 
-                                    alt="{{ $team->name }}" 
-                                    style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover;"> {{-- Example styling for team photo --}}
-                                <div class="team-info">
-                                    <a href="{{ route('teams.show', $team->id) }}" style="font-size: 18px; color: #4da6ff; text-decoration: none; font-weight: 600;">
-                                        {{ $team->name }}
-                                    </a>
-                                    <span style="font-size: 14px; color: #aaa; display: block;"> {{-- Made span a block for clarity --}}
-                                        ({{ $team->pivot->role === 'active' ? 'Titular' : ($team->pivot->role === 'backup' ? 'Reserva' : $team->pivot->role) }}) {{-- Assuming roles like 'active', 'backup' --}}
-                                    </span>
-                                </div>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
+    @foreach ($user->teams as $team)
+        <li class="list-item">
+            <div class="team-item" style="display: flex; align-items: center;">
+                {{-- Imagem do Time (sem alterações) --}}
+                <img class="team-photo" 
+                     src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-logo.png') }}" 
+                     alt="{{ $team->name }}" 
+                     style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover; flex-shrink: 0;"> {{-- Adicionado flex-shrink: 0 --}}
+                
+                {{-- ### INÍCIO DA MUDANÇA ### --}}
+                {{-- Adicionamos as classes flex-1 e min-w-0 aqui --}}
+                <div class="team-info flex-1 min-w-0">
+                {{-- ### FIM DA MUDANÇA ### --}}
+
+                    {{-- O link com truncate agora funcionará corretamente --}}
+                    <a href="{{ route('teams.show', $team->id) }}" 
+                       title="{{ $team->name }}"
+                       class="block truncate text-lg font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+                        {{ $team->name }}
+                    </a>
+
+                    <span style="font-size: 14px; color: #aaa; display: block;">
+                        ({{ $team->pivot->role === 'active' ? 'Titular' : ($team->pivot->role === 'backup' ? 'Reserva' : $team->pivot->role) }})
+                    </span>
+                </div>
+            </div>
+        </li>
+    @endforeach
+</ul>
             @else
                 <div class="empty-state">
                     <div class="empty-state-icon">👥</div>

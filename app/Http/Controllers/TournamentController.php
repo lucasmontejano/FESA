@@ -63,29 +63,36 @@ class TournamentController extends Controller
             'description' => 'nullable|string',
             'rules' => 'nullable|string',
             'prizes' => 'nullable|string',
+            'banner' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if (!auth()->check() || !auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // ✅ Handle cropped image OR fallback to normal file
         $bannerPath = null;
 
-        if ($request->has('cropped_banner')) {
-            $croppedImage = $request->input('cropped_banner');
+        if ($request->hasFile('banner')) {
+            try {
+                $bannerFile = $request->file('banner');
+                $imageName = time() . '_' . uniqid() . '.' . $bannerFile->getClientOriginalExtension();
+                $publicPathBase = 'images/tournament_banners/';
 
-            // Convert base64 to image
-            $croppedImage = str_replace('data:image/jpeg;base64,', '', $croppedImage);
-            $croppedImage = base64_decode($croppedImage);
-            $bannerName = time() . '.jpg';
-            $bannerPath = 'images/tournament_banners/' . $bannerName;
-            file_put_contents(public_path($bannerPath), $croppedImage);
+                // Garante que o diretório exista
+                if (!is_dir(public_path($publicPathBase))) {
+                    mkdir(public_path($publicPathBase), 0755, true);
+                }
+
+                // Move o arquivo para a pasta public/images/tournament_banners
+                $bannerFile->move(public_path($publicPathBase), $imageName);
+
+                $bannerPath = $publicPathBase . $imageName;
+
+            } catch (\Exception $e) {
+                return back()->withInput()->with('error', 'Houve um problema ao fazer o upload do banner.');
+            }
         } else {
-            // fallback if cropper didn't work
-            $bannerName = time().'.'.$request->banner->extension();
-            $request->banner->move(public_path('images/tournament_banners'), $bannerName);
-            $bannerPath = 'images/tournament_banners/'.$bannerName;
+            return back()->withInput()->with('error', 'O banner do torneio é obrigatório.');
         }
 
 

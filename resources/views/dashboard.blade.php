@@ -11,7 +11,7 @@
                 <div class="w-full">
                     <!-- Tournaments Header -->
                     <div class="mb-8">
-                        <h1 class="text-4xl font-bold text-white mb-6">Torneiros</h1>
+                        <h1 class="text-4xl font-bold text-white mb-6">Torneios</h1>
                         
                         <!-- Filter Options -->
                         <div class="flex flex-wrap gap-3">
@@ -95,18 +95,6 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                         Todos
                     </a>
-
-                    {{-- @auth
-                        @if(auth()->user()->isAdmin())
-                        <div class="h-8 w-px bg-gray-700 mx-2"></div>
-                            <div>
-                                <button @click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md flex items-center transition-colors duration-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                                    Criar Torneio
-                                </button>
-                            </div>
-                        @endif
-                    @endauth --}}
             </div>
         
                     </div>
@@ -355,9 +343,8 @@
                                             <label class="block text-gray-300 mb-1">Data do Torneio</label>
                                             <input type="date" name="tournament_date" 
                                                 class="w-full bg-gray-700 text-white rounded-lg p-2" 
-                                                min="{{ now()->format('Y-m-d') }}"
+                                                min="{{ \Carbon\Carbon::now('America/Sao_Paulo') }}"
                                                 required>
-                                            <p class="text-gray-400 text-xs mt-1">Pelo menos 1 dia após o fim das inscrições</p>
                                         </div>
 
                                         <!-- Tournament Time -->
@@ -381,23 +368,22 @@
                                     <!-- prizes -->
                                     <textarea name="prizes" placeholder="Premiações" 
                                         class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
+                                    
+                                    <div>
+                                        <label for="bannerInput" class="block text-gray-300 mb-1 font-semibold">Banner do Torneio</label>
+                                        <input type="file" id="bannerInput" name="banner" 
+                                            class="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                                            accept="image/*" required>
+                                    </div>
 
-                                    <!-- Banner Upload -->
-                                    <input type="file" name="banner" id="bannerInput" class="w-full text-white" accept="image/*" required>
-
-                                    <!-- Image Preview and Crop Area -->
-                                    <div class="w-full mt-4">
-                                        <label class="block text-gray-300 mb-2">Prévia do banner</label>
-                                        <div class="relative w-full h-56 overflow-hidden border border-gray-600 rounded">
-                                            <img id="imagePreview" class="w-full h-full object-cover" style="display: none;">
+                                    <div class="w-full mt-4" id="previewContainer" style="display: none;">
+                                        <label class="block text-gray-300 mb-2"></label>
+                                        
+                                        <div class="relative w-full h-72 overflow-hidden border border-gray-600 rounded">
+                                            <img id="bannerPreview" class="w-full h-full object-cover" src="">
                                         </div>
                                     </div>
-                                    <input type="hidden" name="banner" id="croppedBanner">
 
-                                    <!-- Hidden field to store cropped image -->
-                                    <input type="hidden" name="banner" id="croppedBannerInput">
-
-                                    
                                     <!-- Submit Button -->
                                     <button type="submit" class="bg-indigo-600 text-white w-full py-2 rounded-lg hover:bg-indigo-700 transition">
                                         Publicar Torneio
@@ -417,44 +403,7 @@
                 const form = document.getElementById('createForm');
                 form.classList.toggle('hidden');
             }
-        
-            function toggleCustomInput(select) {
-                const container = document.getElementById('customParticipantsContainer');
-                const customInput = document.getElementById('customParticipantsInput');
-                const participantOption = document.getElementById('participantOption');
-                
-                if (select.value === 'custom') {
-                    container.classList.remove('hidden');
-                    customInput.value = '';
-                    participantOption.value = 'custom';
-                    select.classList.add('hidden');
-                    
-                    if (!document.getElementById('backToPresets')) {
-                        const backButton = document.createElement('button');
-                        backButton.id = 'backToPresets';
-                        backButton.type = 'button';
-                        backButton.textContent = '← Voltar para opções pré-definidas';
-                        backButton.className = 'text-blue-400 text-sm mt-2 hover:underline';
-                        backButton.onclick = function() {
-                            container.classList.add('hidden');
-                            select.value = '';
-                            select.classList.remove('hidden');
-                            if (document.getElementById('backToPresets')) {
-                                backButton.remove();
-                            }
-                        };
-                        container.parentNode.insertBefore(backButton, container.nextSibling);
-                    }
-                } else {
-                    container.classList.add('hidden');
-                    participantOption.value = 'preset';
-                    const backButton = document.getElementById('backToPresets');
-                    if (backButton) {
-                        backButton.remove();
-                    }
-                }
-            }
-        
+
             document.addEventListener('DOMContentLoaded', function() {
                 const tournamentDateInput = document.querySelector('input[name="tournament_date"]');
                 
@@ -511,8 +460,6 @@
                 
                 // Apply to all date inputs
                 setupDateInput(tournamentDateInput);
-
-                // Date relationship validation
                 
 
                 // Form submission validation
@@ -532,54 +479,32 @@
                     }
                 });
             });
+            
+            document.addEventListener('DOMContentLoaded', function () {
+    const imageInput = document.getElementById('bannerInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('bannerPreview');
 
-            let cropper;
-            const input = document.querySelector('input[name="banner"]');
-            const preview = document.getElementById('imagePreview');
-            const croppedBanner = document.getElementById('croppedBanner');
+    if (imageInput && previewContainer && imagePreview) {
+        imageInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
 
-            input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+            if (file) {
+                // Cria uma URL temporária para o arquivo de imagem selecionado
+                const localImageUrl = URL.createObjectURL(file);
+                
+                // Define essa URL como a fonte da imagem de prévia
+                imagePreview.src = localImageUrl;
 
-                const reader = new FileReader();
-                reader.onload = () => {
-                    preview.src = reader.result;
-                    preview.style.display = 'block';
-
-                    if (cropper) cropper.destroy();
-
-                    cropper = new Cropper(preview, {
-                        aspectRatio: 16 / 5, // same as w-full h-56 (roughly 320x112)
-                        viewMode: 1,
-                        autoCropArea: 1,
-                        cropend() {
-                            const canvas = cropper.getCroppedCanvas({
-                                width: 1280, // or desired banner size
-                                height: 448
-                            });
-                            croppedBanner.value = canvas.toDataURL('image/jpeg');
-                        }
-                    });
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Intercept form submission to crop the image first
-            document.querySelector('form').addEventListener('submit', function(e) {
-                if (cropper) {
-                    e.preventDefault(); // prevent form until image is cropped
-
-                    cropper.getCroppedCanvas().toBlob(function(blob) {
-                        const reader = new FileReader();
-                        reader.onloadend = function() {
-                            croppedBannerInput.value = reader.result;
-                            e.target.submit(); // now submit form with cropped image
-                        };
-                        reader.readAsDataURL(blob);
-                    });
-                }
-            });
-        </script>
+                // Mostra o contêiner da prévia
+                previewContainer.style.display = 'block';
+            } else {
+                // Esconde a prévia se o usuário cancelar a seleção de arquivo
+                previewContainer.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
     
 @endsection

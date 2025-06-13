@@ -41,7 +41,7 @@
                         </div>
                         <div class="flex items-center">
                             <i class="icofont-group mr-2"></i>
-                            <span>Dia: {{ $tournament->tournament_date }}</span>
+                            <span>Dia: {{ \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y') }}</span>
                         </div>
 
                         <div class="flex items-center">
@@ -50,12 +50,6 @@
                         </div>           
                         
                         @auth
-    @php
-        // These variables are assumed to be passed from your controller:
-        // $tournament
-        // $ledTeams (Illuminate\Database\Eloquent\Collection of teams led by Auth::user())
-        // $subscribedLedTeam (the Team object that is led by Auth::user() and subscribed, or null)
-    @endphp
 
     @if ($ledTeams->isEmpty())
         {{-- User is authenticated but leads no teams --}}
@@ -331,41 +325,43 @@
 
         <!-- Tab Contents -->
         <div x-show="tab === 'details'" class="text-gray-300 space-y-4">
-            <h2 class="text-xl font-bold text-white">JOGO</h2>
+            <h2 class="text-xl font-bold text-white">Jogo</h2>
             <p>{{ $tournament->game }}</p>
 
-            <h2 class="text-xl font-bold text-white mt-6">Format</h2>
+            <h2 class="text-xl font-bold text-white mt-6">Formato</h2>
             <p>{{ $tournament->format }}</p>
-            <p>Pre-Made Team & Free Agent Registrations are allowed</p>
+            <p>Times formados de 5 integrantes</p>
 
-            <h2 class="text-xl font-bold text-white mt-6">Game Map & Type</h2>
-            <p>{{ $tournament->map ?? 'Summoners Rift' }}</p>
-            <p>{{ $tournament->type ?? 'Tournament Draft' }}</p>
+            <h2 class="text-xl font-bold text-white mt-6">Horário</h2>
+            <p> 
+                Dia: {{ \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y') }} <br> 
+                Hora: {{ substr($tournament->time, 0, 5 )}}
+            </p>
         </div>
 
         <div x-show="tab === 'description'" x-cloak class="text-gray-300 space-y-4">
             <h2 class="text-xl font-bold text-white mb-2">Descrição</h2>
-            <div class="prose prose-invert max-w-none">
+            <div class="prose prose-invert max-w-none whitespace-normal break-words">
                 {!! nl2br(e($tournament->description)) !!}
             </div>
         </div>
 
         <div x-show="tab === 'rules'" x-cloak class="text-gray-300 space-y-4">
             <h2 class="text-xl font-bold text-white mb-2">Regras</h2>
-            <div class="prose prose-invert max-w-none">
+            <div class="prose prose-invert max-w-none whitespace-normal break-words">
                 {!! nl2br(e($tournament->rules)) !!}
             </div>
         </div>
 
         <div x-show="tab === 'prizes'" x-cloak class="text-gray-300 space-y-4">
             <h2 class="text-xl font-bold text-white mb-2">Premiação</h2>
-            <div class="prose prose-invert max-w-none">
+            <div class="prose prose-invert max-w-none whitespace-normal break-words">
                 {!! nl2br(e($tournament->prizes)) !!}
             </div>
         </div>
 
         <div x-show="tab === 'contact'" x-cloak class="text-gray-300">
-            <p>Para mais informações, entre em contato com a organização do evento.</p>
+            <p>Para mais informações, entre em contato com a organização do evento pelo e-mail.</p>
         </div>
 
         <div x-show="tab === 'teams'" x-cloak>

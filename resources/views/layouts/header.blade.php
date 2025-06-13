@@ -24,7 +24,15 @@
 
                                 
                                 <li>
-                                    <a href="{{ url("dashboard") }}">Torneios</a>
+                                    <a href="https://discord.gg/6VTfGxxPZp"
+                                        target="_blank" 
+                                        rel="noopener noreferrer">
+                                        Discord
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="{{ url("dashboard") }}">Torneios abertos</a>
                                 </li>
 
                                <li>
