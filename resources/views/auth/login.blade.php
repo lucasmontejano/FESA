@@ -24,14 +24,6 @@
         <!-- Login Section Starts Here -->
     <div class="login-section padding-top padding-bottom">
         <div class="container">
-
-            <!-- Success Message -->
-            @if(session('success'))
-                <div class="alert alert-success text-center">
-                    {{ session('success') }}
-                </div>
-            @endif
-
                 <div class="account-wrapper">
                     <h3 class="title">Login</h3>
                     <form class="account-form" id="login-form" method="POST" action="{{ route('login') }}">
@@ -52,17 +44,6 @@
                                 <a href="{{ route('password.request') }}">Esqueceu a senha?</a>
                             </div>
                         </div>
-                
-                        <!-- Display errors -->
-                        @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul>
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
                 
                         <div class="form-group">
                             <button type="submit" class="d-block default-button"><span>Entre Agora</span></button>

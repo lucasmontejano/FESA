@@ -20,13 +20,6 @@
         <!-- Register Section Starts Here -->
     <div class="login-section padding-top padding-bottom">
         <div class="container">
-
-            <!-- Success Message -->
-            @if(session('success'))
-                <div class="alert alert-success text-center">
-                    {{ session('success') }}
-                </div>
-            @endif
             <div class="account-wrapper">
                 <h3 class="title">Cadastre-se</h3>
 
@@ -52,17 +45,6 @@
                     <div class="form-group">
                         <input type="password" name="password_confirmation" placeholder="Confirmar Senha" required>
                     </div>
-
-                    <!-- Display errors -->
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
                     <div class="form-group">
                         <button type="submit" class="d-block default-button"><span>Criar Conta</span></button>

@@ -11,6 +11,7 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class TournamentController extends Controller
 {
@@ -111,7 +112,7 @@ class TournamentController extends Controller
         ]);
 
         return redirect()->route('dashboard')
-            ->with('success', 'Tournament created successfully!');
+            ->with('success', 'Torneio criado com sucesso!');
     }
 
     /**
@@ -173,7 +174,6 @@ class TournamentController extends Controller
             'participants_count' => $participants_count,
             'ledTeams' => $ledTeams,
             'subscribedLedTeam' => $subscribedLedTeam,
-            // 'activeTab' => $activeTab, // Pass if your tournaments.show page uses tabs
         ]);
     }
 
@@ -246,7 +246,7 @@ class TournamentController extends Controller
         $tournament->update($dataToUpdate);
 
         return redirect()->route('tournaments.show', $tournament)
-                        ->with('success', 'Tournament updated successfully!');
+                        ->with('success', 'Torneio atualizado com sucesso!');
     }
 
     /**
@@ -266,7 +266,7 @@ class TournamentController extends Controller
         $tournament->delete();
 
         return redirect()->route('dashboard')
-                        ->with('success', 'Tournament deleted successfully!');
+                        ->with('success', 'Torneio deletado com sucesso!');
     }
 
     public function subscribeTeam(Request $request, Tournament $tournament)
@@ -318,7 +318,7 @@ class TournamentController extends Controller
         // Subscribe the team
         $tournament->teams()->attach($teamToSubscribe->id);
 
-        return back()->with('success', "A equipe '{$teamToSubscribe->name}' foi inscrita com sucesso no torneio!");
+        return back()->with('success', "A equipe '" . Str::limit($teamToSubscribe->name, 16) . "' foi inscrita com sucesso!");
     }
 
     public function unsubscribeTeam(Request $request, Tournament $tournament, Team $team)

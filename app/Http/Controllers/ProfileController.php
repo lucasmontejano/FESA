@@ -92,6 +92,6 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect($request->redirect_url ?: route('users.show', $user->name))
-        ->with('success', 'Description updated successfully!');
+        ->with('success', 'Descrição alterada com sucesso!');
     }
 }

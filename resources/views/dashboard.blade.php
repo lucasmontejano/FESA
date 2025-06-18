@@ -18,7 +18,7 @@
                             @php
                             // Define o status padrão como 'upcoming' se nenhum for passado na URL
                             $currentStatus = request('status', 'upcoming');
-                        @endphp
+                            @endphp
 
                     <div class="relative group" x-data="{ open: false }">
                         <button @click="open = !open" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
@@ -48,19 +48,16 @@
                         $isActive = request('game') == $game;
                     @endphp
                     
-                    {{-- ### INÍCIO DA MUDANÇA ### --}}
-                    <a href="{{-- Se o filtro já estiver ativo, o link limpa o filtro. Senão, ele aplica o filtro. --}}
+                    <a href="
                               {{ $isActive 
                                     ? route('dashboard', ['status' => request('status', 'upcoming')]) 
                                     : route('dashboard', ['status' => request('status', 'upcoming'), 'game' => $game]) 
                               }}" 
                        class="flex items-center px-4 py-2 text-sm rounded-md transition-colors duration-200
                               {{ $isActive ? 'bg-blue-600/30 text-white ring-2 ring-blue-500' : 'text-gray-300 hover:bg-gray-700' }}">
-                    {{-- ### FIM DA MUDANÇA ### --}}
                         
-                        {{-- Ícones para cada jogo --}}
                         @if(strcasecmp($game, 'CS2') === 0)
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/CS2_logo.svg" alt="CS2" class="w-5 h-5 mr-3">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Counter_Strike_2_Logo.png" alt="CS2" class="w-5 h-5 mr-3">
                         @elseif(strcasecmp($game, 'League of Legends') === 0 || strcasecmp($game, 'LOL') === 0)
                             <img src="https://upload.wikimedia.org/wikipedia/commons/d/d8/League_of_Legends_2019_vector.svg" alt="LoL" class="w-5 h-5 mr-3">
                         @elseif(strcasecmp($game, 'VALORANT') === 0)
@@ -98,23 +95,6 @@
             </div>
         
                     </div>
-
-                    <!-- Error/Success Messages -->
-                    @if($errors->any())
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            <ul>
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                            {{ session('success') }}
-                        </div>
-                    @endif
                     
                     <!-- Tournaments Grid - Full Width -->                    
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -122,7 +102,7 @@
                         <div class="bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition duration-300">
                             <!-- Tournament Banner (Full Width) -->
                             @if($tournament->banner)
-                                <div class="w-full h-56 overflow-hidden">
+                                <div class="w-full h-72 overflow-hidden">
                                     <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}"
                                         alt="{{ $tournament->name }} Banner"
                                         class="w-full h-full object-cover">
@@ -131,105 +111,96 @@
 
                             <!-- Tournament Details -->
                             <div class="p-6">
-                                <h3 class="text-2xl font-bold text-white mb-2">{{ $tournament->name }}</h3>
+                                <h3 class="text-2xl font-bold text-white mb-2" title="{{ $tournament->name }}">
+                                    {{ \Illuminate\Support\Str::limit($tournament->name, 30) }}
+                                </h3>
                                 
                                 <!-- Date and Time Row -->
                                 <div class="flex items-center gap-3 mb-4">
                                 @php
-                                    // Define o local do Carbon para Português do Brasil
-                                    \Carbon\Carbon::setLocale('pt_BR');
-                                    $tournamentDateCarbon = \Carbon\Carbon::parse($tournament->tournament_date);
-                                    $nowCarbon = \Carbon\Carbon::now();
-                                    $totalSecondsDifference = $tournamentDateCarbon->diffInSeconds($nowCarbon);
+                                // Define o local do Carbon para Português do Brasil
+                                \Carbon\Carbon::setLocale('pt_BR');
 
-                                    $isFutureEvent = $tournamentDateCarbon->isFuture();
+                                // Pega a hora atual no seu fuso horário para uma comparação precisa
+                                $nowCarbon = \Carbon\Carbon::now('America/Sao_Paulo');
 
-                                    $formattedTimeDifference = ''; // Variável para armazenar o resultado formatado
+                                // --- ESTA É A LINHA CORRIGIDA ---
+                                // Nós juntamos a data e a hora do torneio para criar um objeto Carbon completo e preciso.
+                                $tournamentDateCarbon = \Carbon\Carbon::parse($tournament->tournament_date . ' ' . $tournament->time, 'America/Sao_Paulo');
 
-                                    if ($totalSecondsDifference == 0) {
-                                        $formattedTimeDifference = 'agora';
-                                    } else {
-                                        $interval = \Carbon\CarbonInterval::seconds($totalSecondsDifference)->cascade();
+                                // O resto da sua lógica original, que agora funcionará corretamente
+                                $isFutureEvent = $tournamentDateCarbon->isAfter($nowCarbon); // Usar isAfter() é mais claro que isFuture() para evitar bugs de milissegundos
+                                
+                                // Usamos o valor absoluto da diferença, pois diffInSeconds pode ser negativo
+                                $totalSecondsDifference = abs($tournamentDateCarbon->diffInSeconds($nowCarbon));
 
-                                        $parts = [];
-                                        if ($interval->d > 0) { // d é a propriedade para dias no DateInterval/CarbonInterval
-                                            $parts[] = $interval->d . ' ' . ($interval->d === 1 ? 'dia' : 'dias');
-                                        }
-                                        if ($interval->h > 0) { // h é a propriedade para horas
-                                            $parts[] = $interval->h . ' ' . ($interval->h === 1 ? 'hora' : 'horas');
-                                        }
+                                $formattedTimeDifference = ''; // Variável para armazenar o resultado formatado
 
-                                        if (empty($parts)) {
-                                            if ($interval->i > 0) { // i é a propriedade para minutos
-                                                $parts[] = $interval->i . ' ' . ($interval->i === 1 ? 'minuto' : 'minutos');
-                                            } elseif ($interval->s > 0 && $totalSecondsDifference < 60) { // s é a propriedade para segundos
-                                                // Mostrar segundos apenas se a diferença total for menor que um minuto
-                                                $parts[] = $interval->s . ' ' . ($interval->s === 1 ? 'segundo' : 'segundos');
-                                            }
-                                        }
-                                        
-                                        if (!empty($parts)) {
-                                            $durationString = implode(' e ', $parts);
-                                            if ($isFutureEvent) {
-                                                $formattedTimeDifference = 'em ' . $durationString;
-                                            } else {
-                                                $formattedTimeDifference = $durationString . ' atrás';
-                                            }
-                                        } elseif ($totalSecondsDifference > 0) { // Fallback se parts ainda estiver vazio mas houver diferença
-                                            $formattedTimeDifference = 'menos de um minuto';
-                                            if ($isFutureEvent) { $formattedTimeDifference = 'em ' . $formattedTimeDifference; }
-                                            else { $formattedTimeDifference = $formattedTimeDifference . ' atrás';}
-                                        }
+                                if (!$isFutureEvent && $totalSecondsDifference < 60) {
+                                    $formattedTimeDifference = 'agora';
+                                } else {
+                                    $interval = \Carbon\CarbonInterval::seconds($totalSecondsDifference)->cascade();
+
+                                    $parts = [];
+                                    if ($interval->d > 0) {
+                                        $parts[] = $interval->d . ' ' . ($interval->d === 1 ? 'dia' : 'dias');
+                                    }
+                                    if ($interval->h > 0) {
+                                        $parts[] = $interval->h . ' ' . ($interval->h === 1 ? 'hora' : 'horas');
                                     }
 
-                                    // Lógica para o texto e classe da tag de contagem regressiva/status
-                                    $tagText = '';
-                                    $tagClass = '';
-
-                                    if ($nowCarbon->lt($tournamentDateCarbon)) { // Torneio está no futuro
-                                        $diffDays = $nowCarbon->diffInDays($tournamentDateCarbon);
-                                        $diffHours = $nowCarbon->diffInHours($tournamentDateCarbon); // Total de horas até o torneio
-                                        $diffMinutes = $nowCarbon->diffInMinutes($tournamentDateCarbon); // Total de minutos até o torneio
-
-                                        if ($diffDays > 0) {
-                                            $tagText = "EM {$diffDays} DIA" . ($diffDays > 1 ? 'S' : '');
-                                            $tagClass = 'bg-indigo-600'; // Azul para futuro distante
-                                        } elseif ($diffHours > 0) { // Torneio é hoje, horas restantes
-                                            $tagText = "EM {$diffHours} HORA" . ($diffHours > 1 ? 'S' : '');
-                                            $tagClass = 'bg-indigo-600'; // Azul para futuro próximo (horas)
-                                        } elseif ($diffMinutes > 0) { // Torneio é hoje, minutos restantes
-                                            $tagText = "EM {$diffMinutes} MINUTO" . ($diffMinutes > 1 ? 'S' : '');
-                                            $tagClass = 'bg-yellow-500 text-black'; // Amarelo para "em breve" (minutos)
-                                        } else { // Praticamente agora
-                                            $tagText = "EM INSTANTES";
-                                            $tagClass = 'bg-green-600'; // Verde para "quase lá" ou "começando"
+                                    if (empty($parts)) {
+                                        if ($interval->i > 0) {
+                                            $parts[] = $interval->i . ' ' . ($interval->i === 1 ? 'minuto' : 'minutos');
+                                        } elseif ($interval->s > 0 && $totalSecondsDifference < 60) {
+                                            $parts[] = $interval->s . ' ' . ($interval->s === 1 ? 'segundo' : 'segundos');
                                         }
-                                    } else { // Horário do torneio chegou ou já passou
-                                        // Considera uma "janela ao vivo", por exemplo, por 3 horas após o início
-                                        $hoursPassedSinceStart = $tournamentDateCarbon->diffInHours($nowCarbon);
-                                        if ($hoursPassedSinceStart <= 3) { // Mostrar "AO VIVO" por 3 horas após o início
-                                            $tagText = "AO VIVO";
-                                            $tagClass = 'bg-green-600';
+                                    }
+                                    
+                                    if (!empty($parts)) {
+                                        $durationString = implode(' e ', $parts);
+                                        if ($isFutureEvent) {
+                                            $formattedTimeDifference = 'em ' . $durationString;
                                         } else {
-                                            $tagText = "FINALIZADO";
-                                            $tagClass = 'bg-red-600'; // Vermelho para "finalizado"
+                                            $formattedTimeDifference = $durationString . ' atrás';
                                         }
+                                    } elseif ($totalSecondsDifference > 0) {
+                                        $formattedTimeDifference = $isFutureEvent ? 'em menos de um minuto' : 'há menos de um minuto';
+                                    } else {
+                                        $formattedTimeDifference = 'agora';
                                     }
-                                @endphp
+                                }
 
-                                {{-- Data Formatada --}}
+                                // A sua lógica para $tagText e $tagClass já deve funcionar melhor com a data/hora correta
+                                $tagText = '';
+                                $tagClass = '';
+                                
+                                if ($isFutureEvent) {
+                                    // ... sua lógica para "EM X DIAS", "EM X HORAS", etc. ...
+                                    // Essa parte já deve funcionar melhor agora. Por exemplo:
+                                    $tagText = "EM " . $tournamentDateCarbon->diffForHumans(null, true, false, 2); // Exibe "em 2 dias", "em 5 horas"
+                                    $tagClass = 'bg-indigo-600';
+                                } else {
+                                    $hoursPassedSinceStart = $nowCarbon->diffInHours($tournamentDateCarbon);
+                                    if ($hoursPassedSinceStart <= 3) { // Janela de "AO VIVO"
+                                        $tagText = "AO VIVO";
+                                        $tagClass = 'bg-green-600';
+                                    } else {
+                                        $tagText = "FINALIZADO";
+                                        $tagClass = 'bg-red-600';
+                                    }
+                                }
+                            @endphp
+
                                 <div class="flex items-center text-gray-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{-- Exemplo: Seg, 26 de Maio --}}
                                     {{ $tournamentDateCarbon->translatedFormat('D, d \d\e M') }}
                                 </div>
                                                                 
-                                {{-- Hora Formatada --}}
                                 <div class="flex items-center bg-sky-600 text-white text-xs font-medium px-3 py-1 rounded-full ml-auto">                                   
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            {{-- Ícone ajustado para h-4 w-4 e mr-1.5 para melhor harmonia com text-xs --}}
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                         {{ $formattedTimeDifference }}
@@ -238,7 +209,7 @@
                                 
                                 <!-- Location/Country -->
                                 <div class="text-gray-400 mb-4">
-                                    {{ $tournament->location ?? 'Brazil' }}
+                                    <p> Horário: {{ substr($tournament->time, 0, 5 )}}</p>
                                 </div>
                                 
                                 <!-- Creator -->
@@ -282,40 +253,62 @@
                 <!-- Admin Panel - Below Tournaments -->
                 @auth
                 @if(auth()->user()->isAdmin())
-                <div class="mt-12 w-full"> <!-- Added margin-top and full width -->
-                    <div class="bg-gray-800 p-6 rounded-lg">
-                        <h3 class="text-xl font-bold text-white mb-4">Painel do Administrador</h3>
-                        <button onclick="toggleCreateForm()" class="bg-indigo-600 text-white w-full py-2 rounded-lg mb-4 hover:bg-indigo-700 transition">
-                            Criar Novo Torneio
+                <div class="mt-12 w-full">
+                    <div class="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white">Painel do Administrador</h3>
+                        </div>
+                        
+                        <button onclick="toggleCreateForm()" class="group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white w-full py-4 rounded-xl mb-6 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
+                            <div class="flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <span class="font-semibold">Criar Novo Torneio</span>
+                            </div>
                         </button>
 
                         <!-- Create Tournament Form (Initially Hidden) -->
                         <div id="createForm" class="hidden">
                             <form action="{{ route('tournaments.store') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
-                                <div class="space-y-4">
+                                <div class="space-y-6">
                                     <!-- Tournament Name -->
-                                    <input type="text" name="name" placeholder="Nome do Torneio" 
-                                        class="w-full bg-gray-700 text-white rounded-lg p-2" required>
+                                    <div class="form-group">
+                                        <label class="block text-gray-300 mb-2 font-medium">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                            </svg>
+                                            Nome do Torneio
+                                        </label>
+                                        <input type="text" name="name" placeholder="Digite o nome do torneio..." 
+                                            class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 placeholder-gray-400" required>
+                                    </div>
                                     
                                     <!-- Game -->
-                                    <div class="mb-4">
-                                        <label class="block text-gray-300 mb-2">Jogo</label>
+                                    <div class="form-group">
+                                        <label class="block text-gray-300 mb-2 font-medium">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-8a3 3 0 114 4.472"></path>
+                                            </svg>
+                                            Jogo
+                                        </label>
                                         <div class="relative">
-                                            <select name="game" class="w-full bg-gray-700 text-white rounded-lg p-2 pl-10 appearance-none" required
+                                            <select name="game" class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 appearance-none cursor-pointer" required
                                                     onchange="document.getElementById('game-icon').src = this.selectedOptions[0].dataset.icon">
                                                 <option value="" disabled selected>Selecione um jogo</option>
-                                                <option value="CS2">
-                                                    Counter-Strike 2
-                                                </option>
-                                                <option value="VALORANT">
-                                                    VALORANT
-                                                </option>
-                                                <option value="LOL">
-                                                    League of Legends
-                                                </option>
+                                                <option value="CS2">Counter-Strike 2</option>
+                                                <option value="VALORANT">VALORANT</option>
+                                                <option value="LOL">League of Legends</option>
                                             </select>
-                                            
+                                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
                                         </div>
                                     </div>
                                     
@@ -323,71 +316,139 @@
                                     <input type="hidden" name="participant_option" id="participantOption" value="preset">
                                     
                                     <!-- Max Participants -->
-                                    <div class="mb-4">
-                                        <label class="block text-gray-300 mb-2">Número máximo de equipes participantes</label>
-                                        <select name="max_participants" 
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2"
-                                                required>
-                                            <option value="" disabled selected>Selecione uma opção</option>
-                                            <option value="16">8 equipes</option>
-                                            <option value="16">16 equipes</option>
-                                            <option value="32">32 equipes</option>
-                                            <option value="64">64 equipes</option>
-                                            <option value="128">128 equipes</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">                                       
-                                        <!-- Tournament Date -->
-                                        <div>
-                                            <label class="block text-gray-300 mb-1">Data do Torneio</label>
-                                            <input type="date" name="tournament_date" 
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2" 
-                                                min="{{ \Carbon\Carbon::now('America/Sao_Paulo') }}"
-                                                required>
-                                        </div>
-
-                                        <!-- Tournament Time -->
-                                        <div>
-                                            <label class="block text-gray-300 mb-1">Hora do Torneio</label>
-                                            <input type="time" name="time"
-                                                class="w-full bg-gray-700 text-white rounded-lg p-2"
-                                                required>
-                                            <p class="text-gray-400 text-xs mt-1">Horário de início do torneio</p>
+                                    <div class="form-group">
+                                        <label class="block text-gray-300 mb-2 font-medium">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            Número máximo de equipes participantes
+                                        </label>
+                                        <div class="relative">
+                                            <select name="max_participants" 
+                                                    class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 appearance-none cursor-pointer"
+                                                    required>
+                                                <option value="" disabled selected>Selecione uma opção</option>
+                                                <option value="16">8 equipes</option>
+                                                <option value="16">16 equipes</option>
+                                                <option value="32">32 equipes</option>
+                                                <option value="64">64 equipes</option>
+                                                <option value="128">128 equipes</option>
+                                            </select>
+                                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
                                         </div>
                                     </div>
 
-                                    <!-- Description -->
-                                    <textarea name="description" placeholder="Descrição" 
-                                        class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
+                                    <!-- Date and Time Section -->
+                                    <div class="bg-gray-800/50 p-6 rounded-lg border border-gray-600">
+                                        <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            Programação do Torneio
+                                        </h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">                                       
+                                            <!-- Tournament Date -->
+                                            <div>
+                                                <label class="block text-gray-300 mb-2 font-medium">Data do Torneio</label>
+                                                <input type="date" name="tournament_date" 
+                                                    class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200" 
+                                                    min="{{ \Carbon\Carbon::now('America/Sao_Paulo') }}"
+                                                    required>
+                                            </div>
 
-                                    <!-- Rules -->
-                                    <textarea name="rules" placeholder="Regras do torneio" 
-                                        class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
+                                            <!-- Tournament Time -->
+                                            <div>
+                                                <label class="block text-gray-300 mb-2 font-medium">Hora do Torneio</label>
+                                                <input type="time" name="time"
+                                                    class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200"
+                                                    required>
+                                                <p class="text-gray-400 text-sm mt-2 flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    Horário de início do torneio
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                    <!-- prizes -->
-                                    <textarea name="prizes" placeholder="Premiações" 
-                                        class="w-full bg-gray-700 text-white rounded-lg p-2"></textarea>
+                                    <!-- Text Areas Section -->
+                                    <div class="space-y-4">
+                                        <!-- Description -->
+                                        <div class="form-group">
+                                            <label class="block text-gray-300 mb-2 font-medium">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Descrição
+                                            </label>
+                                            <textarea name="description" placeholder="Descreva o torneio, formato, etc..." 
+                                                class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 placeholder-gray-400 resize-vertical" rows="4"></textarea>
+                                        </div>
+
+                                        <!-- Rules -->
+                                        <div class="form-group">
+                                            <label class="block text-gray-300 mb-2 font-medium">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                                </svg>
+                                                Regras do Torneio
+                                            </label>
+                                            <textarea name="rules" placeholder="Defina as regras e condições do torneio..." 
+                                                class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 placeholder-gray-400 resize-vertical" rows="4"></textarea>
+                                        </div>
+
+                                        <!-- Prizes -->
+                                        <div class="form-group">
+                                            <label class="block text-gray-300 mb-2 font-medium">
+                                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                                </svg>
+                                                Premiações
+                                            </label>
+                                            <textarea name="prizes" placeholder="Descreva as premiações e recompensas..." 
+                                                class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 placeholder-gray-400 resize-vertical" rows="3"></textarea>
+                                        </div>
+                                    </div>
                                     
-                                    <div>
-                                        <label for="bannerInput" class="block text-gray-300 mb-1 font-semibold">Banner do Torneio</label>
-                                        <input type="file" id="bannerInput" name="banner" 
-                                            class="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
-                                            accept="image/*" required>
-                                    </div>
+                                    <!-- Banner Upload Section -->
+                                    <div class="bg-gray-800/50 p-6 rounded-lg border border-gray-600">
+                                        <label for="bannerInput" class="block text-gray-300 mb-3 font-medium">
+                                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                            Banner do Torneio
+                                        </label>
+                                        <div class="relative group">
+                                            <input type="file" id="bannerInput" name="banner" 
+                                                class="w-full text-white p-4 border-2 border-dashed border-gray-600 rounded-lg bg-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer hover:border-indigo-500 transition-all duration-200" 
+                                                accept="image/*" required>
+                                            <p class="text-gray-400 text-sm mt-2">Formatos aceitos: JPG, PNG, GIF (máx. 5MB)</p>
+                                        </div>
 
-                                    <div class="w-full mt-4" id="previewContainer" style="display: none;">
-                                        <label class="block text-gray-300 mb-2"></label>
-                                        
-                                        <div class="relative w-full h-72 overflow-hidden border border-gray-600 rounded">
-                                            <img id="bannerPreview" class="w-full h-full object-cover" src="">
+                                        <div class="w-full mt-4" id="previewContainer" style="display: none;">
+                                            <div class="relative w-full h-72 overflow-hidden border-2 border-gray-600 rounded-lg bg-gray-800">
+                                                <img id="bannerPreview" class="w-full h-full object-cover rounded-lg">
+                                                <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+                                                    <p class="text-white font-medium">Preview do Banner</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Submit Button -->
-                                    <button type="submit" class="bg-indigo-600 text-white w-full py-2 rounded-lg hover:bg-indigo-700 transition">
-                                        Publicar Torneio
-                                    </button>
+                                    <div class="pt-4">
+                                        <button type="submit" class="group relative bg-gradient-to-r from-green-600 to-emerald-600 text-white w-full py-4 rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl font-semibold text-lg">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                                </svg>
+                                                Publicar Torneio
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -490,16 +551,12 @@
             const file = event.target.files[0];
 
             if (file) {
-                // Cria uma URL temporária para o arquivo de imagem selecionado
                 const localImageUrl = URL.createObjectURL(file);
                 
-                // Define essa URL como a fonte da imagem de prévia
                 imagePreview.src = localImageUrl;
 
-                // Mostra o contêiner da prévia
                 previewContainer.style.display = 'block';
             } else {
-                // Esconde a prévia se o usuário cancelar a seleção de arquivo
                 previewContainer.style.display = 'none';
             }
         });

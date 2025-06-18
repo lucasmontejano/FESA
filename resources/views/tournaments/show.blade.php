@@ -27,7 +27,9 @@
                 
                 <!-- Tournament Info -->
                 <div class="md:w-1/3 bg-gray-800 p-6 rounded-lg">
-                    <h1 class="text-2xl font-bold text-white mb-4">{{ $tournament->name }}</h1>
+                    <h1 class="text-2xl font-bold text-white mb-4" title="{{ $tournament->name }}">
+                        {{ \Illuminate\Support\Str::limit($tournament->name, 30) }}
+                    </h1>
                     
                     <div class="space-y-4 text-gray-300">
                         <div class="flex items-center">
@@ -51,147 +53,105 @@
                         
                         @auth
 
-    @if ($ledTeams->isEmpty())
-        {{-- User is authenticated but leads no teams --}}
-        <a href="{{ route('teams.create', ['redirectTo' => url()->current()]) }}" class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-2 px-4 rounded-lg mt-4">
-            Você precisa criar uma equipe primeiro!
-        </a>
-        {{-- Consider adding a flash message in your controller if redirecting:
-            session()->flash('info', 'Você precisa criar ou liderar uma equipe para se inscrever em torneios.');
-        --}}
-    @elseif ($subscribedLedTeam)
-        {{-- A team led by the user is already subscribed --}}
-        <form action="{{ route('tournaments.unsubscribeTeam', ['tournament' => $tournament->id, 'team' => $subscribedLedTeam->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja cancelar a inscrição da equipe {{ $subscribedLedTeam->name }}?');">
-            @csrf
-            @method('DELETE') {{-- Or POST if you prefer, adjust route accordingly --}}
-            <button type="submit" class="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2 rounded-lg mt-4">
-                Cancelar Inscrição ({{ $subscribedLedTeam->name }})
-            </button>
-        </form>
-    @else
-        {{-- User leads one or more teams, and none are currently subscribed --}}
-       {{-- This block replaces your original code snippet, adding the validation --}}
-
-@php
-    $nowInSaoPaulo = \Carbon\Carbon::now('America/Sao_Paulo');
-    $isRegistrationOpen = $nowInSaoPaulo->lt($tournament->time);
-@endphp
-
-{{--
-    The main condition: Show subscription options ONLY IF
-    1. The registration date has not passed ($isRegistrationOpen).
-    2. The tournament status is explicitly 'registration_open' (useful for manual admin overrides).
---}}
-@if ($isRegistrationOpen && $tournament->status === 'registration_open')
-
-    {{-- User leads one or more teams, and none are currently subscribed. --}}
-    {{-- This is your original code, which will now only be shown if registration is open. --}}
-    @if ($ledTeams->count() === 1)
-        @php $teamToSubscribe = $ledTeams->first(); @endphp
-        <form action="{{ route('tournaments.subscribeTeam', $tournament->id) }}" method="POST">
-            @csrf
-            <input type="hidden" name="team_id" value="{{ $teamToSubscribe->id }}">
-            <button type="submit" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg mt-4">
-                Inscrever Equipe ({{ $teamToSubscribe->name }})
-            </button>
-        </form>
-    @else
-        {{-- User leads multiple teams, provide a selection modal --}}
-        <button type="button" id="openSubscribeModalBtn" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg mt-4">
-            Inscrever Equipe...
-        </button>
-
-        {{-- The modal itself is also inside this conditional, so it won't appear at all if registrations are closed --}}
-        <div id="subscribeTeamModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display:none; z-index: 1050;">
-            <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-                <div class="mt-3 text-center">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Selecione sua equipe para inscrever</h3>
-                    <form action="{{ route('tournaments.subscribeTeam', $tournament->id) }}" method="POST" class="mt-2">
-                        @csrf
-                        <div class="mt-2 px-7 py-3">
-                            <select name="team_id" class="block w-full mt-1 p-2 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black">
-                                @foreach ($ledTeams as $team)
-                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="items-center px-4 py-3">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-                                Confirmar Inscrição
+                    @if ($ledTeams->isEmpty())
+                        <a href="{{ route('teams.create', ['redirectTo' => url()->current()]) }}" class="block bg-orange-500 hover:bg-orange-600 text-white text-center py-2 px-4 rounded-lg mt-4">
+                            Você precisa criar uma equipe primeiro!
+                        </a>
+                    @elseif ($subscribedLedTeam)
+                        <form action="{{ route('tournaments.unsubscribeTeam', ['tournament' => $tournament->id, 'team' => $subscribedLedTeam->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja cancelar a inscrição da equipe {{ $subscribedLedTeam->name }}?');">
+                            @csrf
+                            @method('DELETE') {{-- Or POST if you prefer, adjust route accordingly --}}
+                            <button type="submit" class="block w-full bg-red-600 hover:bg-red-700 text-white text-center py-2 rounded-lg mt-4">
+                                Cancelar Inscrição ({{ \Illuminate\Support\Str::limit($subscribedLedTeam->name, 16) }})
                             </button>
-                            <button type="button" id="closeSubscribeModalBtn" class="ml-2 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                                Cancelar
+                        </form>
+                    @else
+                @php
+                    $nowInSaoPaulo = \Carbon\Carbon::now('America/Sao_Paulo');
+                    $isRegistrationOpen = $nowInSaoPaulo->lt($tournament->time);
+                @endphp
+
+                @if ($isRegistrationOpen && $tournament->status === 'registration_open')
+                    @if ($ledTeams->count() === 1)
+                        @php $teamToSubscribe = $ledTeams->first(); @endphp
+                        <form action="{{ route('tournaments.subscribeTeam', $tournament->id) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="team_id" value="{{ $teamToSubscribe->id }}">
+                            <button type="submit" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg mt-4">
+                                Inscrever Equipe ({{ $teamToSubscribe->name }})
                             </button>
+                        </form>
+                    @else
+                        {{-- User leads multiple teams, provide a selection modal --}}
+                        <button type="button" id="openSubscribeModalBtn" class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-2 rounded-lg mt-4">
+                            Inscrever Equipe...
+                        </button>
+
+                        {{-- The modal itself is also inside this conditional, so it won't appear at all if registrations are closed --}}
+                        <div id="subscribeTeamModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display:none; z-index: 1050;">
+                            <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+                                <div class="mt-3 text-center">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Selecione sua equipe para inscrever</h3>
+                                    <form action="{{ route('tournaments.subscribeTeam', $tournament->id) }}" method="POST" class="mt-2">
+                                        @csrf
+                                        <div class="mt-2 px-7 py-3">
+                                            <select name="team_id" class="block w-full mt-1 p-2 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black">
+                                                @foreach ($ledTeams as $team)
+                                                    <option value="{{ $team->id }}">{{ $team->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="items-center px-4 py-3">
+                                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                                Confirmar Inscrição
+                                            </button>
+                                            <button type="button" id="closeSubscribeModalBtn" class="ml-2 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @endif
+                    @endif
 
-            <script>
-                // Ensure this script runs after the elements are in the DOM
-                document.addEventListener('DOMContentLoaded', function () {
-                    const openModalBtn = document.getElementById('openSubscribeModalBtn');
-                    const closeModalBtn = document.getElementById('closeSubscribeModalBtn');
-                    const modal = document.getElementById('subscribeTeamModal');
+                    <script>
+                        // Ensure this script runs after the elements are in the DOM
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const openModalBtn = document.getElementById('openSubscribeModalBtn');
+                            const closeModalBtn = document.getElementById('closeSubscribeModalBtn');
+                            const modal = document.getElementById('subscribeTeamModal');
 
-                    if (openModalBtn && modal) {
-                        openModalBtn.addEventListener('click', function() {
-                            modal.style.display = 'flex';
-                        });
-                    }
+                            if (openModalBtn && modal) {
+                                openModalBtn.addEventListener('click', function() {
+                                    modal.style.display = 'flex';
+                                });
+                            }
 
-                    if (closeModalBtn && modal) {
-                        closeModalBtn.addEventListener('click', function() {
-                            modal.style.display = 'none';
-                        });
-                    }
+                            if (closeModalBtn && modal) {
+                                closeModalBtn.addEventListener('click', function() {
+                                    modal.style.display = 'none';
+                                });
+                            }
 
-                    // Optional: Close modal if clicked outside of the modal content
-                    if (modal) {
-                        window.addEventListener('click', function(event) {
-                            if (event.target === modal) {
-                                modal.style.display = 'none';
+                            // Optional: Close modal if clicked outside of the modal content
+                            if (modal) {
+                                window.addEventListener('click', function(event) {
+                                    if (event.target === modal) {
+                                        modal.style.display = 'none';
+                                    }
+                                });
                             }
                         });
-                    }
-                });
-            </script>
-        @endif
-    @endif
-    @else
-        {{-- User not authenticated --}}
-        <a href="{{ route('login') }}" class="block bg-gray-400 hover:bg-gray-500 text-white text-center py-2 rounded-lg mt-4">
-            Faça login para se inscrever
-        </a>
-    @endauth
-
-    {{-- Display session messages (success, error, info) --}}
-    @if (session('success'))
-        <div class="mt-4 p-3 bg-green-200 text-green-800 rounded-md">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if (session('error'))
-        <div class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
-            {{ session('error') }}
-        </div>
-    @endif
-    @if (session('info'))
-        <div class="mt-4 p-3 bg-blue-200 text-blue-800 rounded-md">
-            {{ session('info') }}
-        </div>
-    @endif
-    @if ($errors->any())
-        <div class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+                    </script>
+                @endif
+            @endif
+            @else
+                {{-- User not authenticated --}}
+                <a href="{{ route('login') }}" class="block bg-gray-400 hover:bg-gray-500 text-white text-center py-2 rounded-lg mt-4">
+                    Faça login para se inscrever
+                </a>
+            @endauth
                         @if (auth()->check() && auth()->id() === $tournament->user_id)
                             <div x-data="{ editing: false }">  <div class="flex justify-end mb-4 space-x-2">
                                     <button @click="editing = true"
@@ -375,11 +335,9 @@
                                      alt="Logo {{ $team->name }}">
                                 <h4 class="text-lg font-semibold text-white mb-2 flex-grow">
                                     <a href="{{ route('teams.show', $team->id) }}" class="hover:text-blue-400 transition-colors duration-200">
-                                        {{ $team->name }}
+                                        {{ \Illuminate\Support\Str::limit($team->name, 20) }}
                                     </a>
                                 </h4>
-                                {{-- You could add more brief info, e.g., number of team members --}}
-                                {{-- <p class="text-sm text-gray-500">{{ $team->members()->count() }} membros</p> --}}
                             </div>
                         @endforeach
                     </div>

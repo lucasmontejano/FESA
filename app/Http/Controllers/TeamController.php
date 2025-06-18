@@ -48,7 +48,7 @@ class TeamController extends Controller
         // Add the leader as an active member of the team
         $team->members()->attach(Auth::id(), ['role' => 'active']);
 
-        return redirect()->route('teams.show', $team->id)->with('success', 'Team created successfully!');
+        return redirect()->route('teams.show', $team->id)->with('success', 'Time criado com sucesso!');
     }
 
     /**
@@ -92,7 +92,7 @@ class TeamController extends Controller
         // Add the user to the team as an active member
         $team->members()->attach($user->id, ['role' => 'active']);
 
-        return redirect()->route('teams.show', $team->id)->with('success', 'You have joined the team successfully!');
+        return redirect()->route('teams.show', $team->id)->with('success', 'Você juntou-se a uma equipe com sucesso!');
     }
 
     /**
@@ -125,7 +125,7 @@ class TeamController extends Controller
 
         $team->members()->updateExistingPivot($member->id, ['role' => $request->role]);
 
-        return redirect()->route('teams.manage', $team->id)->with('success', 'Member role updated successfully!');
+        return redirect()->route('teams.manage', $team->id)->with('success', 'Membros atualizados com sucesso!');
     }
 
     /**
@@ -326,5 +326,38 @@ class TeamController extends Controller
             Log::error("Erro ao sair do time ID {$team->id} para o usuário ID {$user->id}: " . $e->getMessage());
             return back()->with('error', 'Ocorreu um erro ao tentar sair do time. Por favor, tente novamente.');
         }
+    }
+
+    public function updatePicture(Request $request, Team $team)
+    {
+        // 1. Autorização: Garante que apenas o líder do time pode mudar a foto.
+        if (Auth::id() !== $team->leader_id) {
+            abort(403, 'Ação não autorizada.');
+        }
+
+        // 2. Validação: Garante que o arquivo enviado é uma imagem válida.
+        $request->validate([
+            'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
+        ]);
+
+        // 3. Deleta a foto antiga (se existir)
+        if ($team->picture) {
+            $oldPicturePath = public_path('images/team_pictures/' . $team->picture);
+            if (File::exists($oldPicturePath)) {
+                File::delete($oldPicturePath);
+            }
+        }
+
+        // 4. Salva a nova foto
+        $imageFile = $request->file('picture');
+        $imageName = time() . '.' . $imageFile->getClientOriginalExtension();
+        $imageFile->move(public_path('images/team_pictures'), $imageName);
+
+        // 5. Atualiza o registro no banco de dados
+        $team->picture = $imageName;
+        $team->save();
+
+        // 6. Redireciona de volta com uma mensagem de sucesso
+        return back()->with('success', 'Foto do time atualizada com sucesso!');
     }
 }

@@ -84,6 +84,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/teams/{team}/positions', [TeamController::class, 'updatePositions'])->name('teams.updatePositions');
     Route::delete('/teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
     Route::delete('/teams/{team}/leave', [TeamController::class, 'leave'])->name('teams.leave');
+    Route::post('/teams/{team}/update-picture', [TeamController::class, 'updatePicture'])->name('teams.updatePicture');
 });
 
 // Profile Routes

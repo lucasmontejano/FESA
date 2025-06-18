@@ -1,19 +1,13 @@
 @extends('layouts.app')
 
-@section('title', $user->name . "'s Profile")
+@section('title', $user->nickname . "'s Profile")
 
 @section('content')
 <style>
-    body {
-        background-color: #12151c;
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-    }
+    
 
     .pageheader-section {
-        min-height: 100vh;
+        min-height: 120vh;
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -292,30 +286,30 @@
         <div class="profile-card">
             @auth
                 @if (Auth::id() === $user->id)
-                    <form id="profile-picture-form" action="{{ route('profile.updatePicture', $user->name) }}" method="POST" enctype="multipart/form-data">
+                    <form id="profile-picture-form" action="{{ route('profile.updatePicture', $user->nickname) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <label for="profile-picture-input" style="cursor: pointer;">
                             <img class="profile-avatar" id="profile-avatar-preview"
                                 src="{{ $user->profile_picture ? asset('images/profile_pictures/' . $user->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}"
-                                alt="{{ $user->name }}">
+                                alt="{{ $user->nickname }}">
                         </label>
                         <input type="file" name="profile_picture" id="profile-picture-input" accept="image/*" style="display: none;" onchange="document.getElementById('profile-picture-form').submit();">
                     </form>
                 @else
                     <img class="profile-avatar"
                         src="{{ $user->profile_picture ? asset('images/profile_pictures/' . $user->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}"
-                        alt="{{ $user->name }}">
+                        alt="{{ $user->nickname }}">
                 @endif
             @endauth
 
            <div class="profile-info">
-                <div class="profile-name">{{ $user->name }}</div>
+                <div class="profile-name">{{ $user->nickname }}</div>
                 <div class="profile-description" id="description-display">
                     {{ $user->description ?? '' }}
                 </div>
 
-                <form id="description-form" action="{{ route('profile.updateDescription', $user->name) }}" method="POST" style="display: none;">
+                <form id="description-form" action="{{ route('profile.updateDescription', $user->nickname) }}" method="POST" style="display: none;">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="redirect_url" value="{{ url()->current() }}">
@@ -344,22 +338,12 @@
         <div id="tournaments" class="tab-section {{ ($activeTab ?? 'tournaments') === 'tournaments' ? 'active' : '' }}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3 class="section-title" style="margin-bottom: 0;">Meus Torneios</h3>
-                {{-- Optional: "Create Tournament" button if users can create them --}}
-                {{-- @auth
-                    @if(Auth::user()->can('create tournaments') || Auth::user()->isAdmin())
-                        <a href="{{ route('tournaments.create') }}" class="btn-create-tournament" style="...">
-                            Criar Torneio
-                        </a>
-                    @endif
-                @endauth --}}
             </div>
 
             @if (isset($myRelevantTournaments) && $myRelevantTournaments->count() > 0)
                 <ul class="list-block">
                     @foreach ($myRelevantTournaments as $tournament)
                         <li class="list-item">
-                            {{-- Display tournament details: name, banner, game, date etc. --}}
-                            {{-- Example from before: --}}
                             <div class="tournament-item" style="display: flex; align-items: center; gap: 15px;">
                                 <a href="{{ route('tournaments.show', $tournament->id) }}" style="flex-shrink: 0;">
                                     <img class="tournament-banner-thumbnail"
@@ -368,14 +352,14 @@
                                         style="width: 120px; height: 70px; object-fit: cover; border-radius: 4px; border: 1px solid #444;">
                                 </a>
                                 <div class="tournament-info" style="flex-grow: 1;">
-                                    <a href="{{ route('tournaments.show', $tournament->id) }}" style="font-size: 1.1em; color: #4da6ff; text-decoration: none; font-weight: 600; display: block; margin-bottom: 5px;">
-                                        {{ $tournament->name }}
+                                    <a href="{{ route('tournaments.show', $tournament->id) }}" style="font-size: 1.1em; color: #4da6ff; text-decoration: none; font-weight: 600; display: block; margin-bottom: 5px;" title="{{ $tournament->name }}">
+                                        {{ \Illuminate\Support\Str::limit($tournament->name, 15) }}
                                     </a>
                                     <span style="font-size: 0.9em; color: #aaa; display: block; margin-bottom: 3px;">
                                         Jogo: {{ $tournament->game ?? 'N/A' }}
                                     </span>
                                     <span style="font-size: 0.9em; color: #aaa; display: block;">
-                                        Data: {{ $tournament->tournament_date ? \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y \à\s H:i') : 'N/A' }}
+                                        Data: {{ $tournament->tournament_date ? \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y \a\s H:i') : 'N/A' }}
                                     </span>
                                 </div>
                             </div>
@@ -385,7 +369,7 @@
             @else
                 <div class="empty-state">
                     <div class="empty-state-icon">🏆</div>
-                    <p class="text-light">{{ $user->name }} não está participando de nenhum torneio atualmente (via suas equipes).</p>
+                    <p class="text-light">{{ $user->nickname }} não está participando de nenhum torneio atualmente (via suas equipes).</p>
                 </div>
             @endif
         </div>
@@ -411,12 +395,8 @@
                      alt="{{ $team->name }}" 
                      style="width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover; flex-shrink: 0;"> {{-- Adicionado flex-shrink: 0 --}}
                 
-                {{-- ### INÍCIO DA MUDANÇA ### --}}
-                {{-- Adicionamos as classes flex-1 e min-w-0 aqui --}}
                 <div class="team-info flex-1 min-w-0">
-                {{-- ### FIM DA MUDANÇA ### --}}
 
-                    {{-- O link com truncate agora funcionará corretamente --}}
                     <a href="{{ route('teams.show', $team->id) }}" 
                        title="{{ $team->name }}"
                        class="block truncate text-lg font-semibold text-blue-400 hover:text-blue-300 transition-colors">
@@ -434,7 +414,7 @@
             @else
                 <div class="empty-state">
                     <div class="empty-state-icon">👥</div>
-                    <p class="text-light">{{ $user->name }} is not currently in any teams.</p>
+                    <p class="text-light">{{ $user->nickname }} ainda não está em nenhum time.</p>
                 </div>
             @endif
         </div>

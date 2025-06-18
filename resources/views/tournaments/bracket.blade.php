@@ -3,7 +3,6 @@
 @section('title', 'Bracket: ' . $tournament->name)
 
 @push('styles')
-{{-- Seus estilos CSS para o bracket permanecem os mesmos. Cole-os aqui se estiverem neste arquivo. --}}
 <style>
     .bracket-container { display: flex; overflow-x: auto; background-color: #161824; padding: 20px; border-radius: 8px; }
     .bracket-container::-webkit-scrollbar { height: 10px; }
@@ -32,40 +31,44 @@
 <section class="pageheader-section" style="background-image: url({{ asset('images/pageheader/bg.jpg') }});">
     <div class="container mx-auto px-4 py-8 text-white">
 
-        {{-- ### INÍCIO: NOVO CABEÇALHO DO TORNEIO ### --}}
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 mb-8 text-center sm:text-left">
-            @if($tournament->banner)
-                <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}"
-                    alt="Banner do Torneio"
-                    class="w-40 h-24 object-cover rounded-lg shadow-lg border-2 border-gray-700 flex-shrink-0">
-            @endif
-            <div>
-                <h1 class="text-4xl font-bold">{{ $tournament->name }}</h1>
-                <p class="text-xl text-yellow-400 mt-1">Status: {{ ucfirst(str_replace('_', ' ', $tournament->status)) }}</p>
-            </div>
-        </div>
-        {{-- ### FIM: NOVO CABEÇALHO DO TORNEIO ### --}}
-
-
-        {{-- ### INÍCIO: SEÇÃO DO CAMPEÃO (AGORA NO LUGAR CORRETO) ### --}}
-        @if ($tournament->status === 'completed' && $tournament->champion)
-            <div class="max-w-lg mx-auto mb-8 p-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 rounded-lg shadow-2xl text-center">
-                <h2 class="text-xl font-bold text-gray-900">🏆 CAMPEÃ DO TORNEIO 🏆</h2>
-                <div class="mt-4 flex flex-col items-center">
-                    <img class="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-                        src="{{ $tournament->champion->picture ? asset('images/team_pictures/' . $tournament->champion->picture) : asset('images/default-team-logo.png') }}"
-                        alt="Logo {{ $tournament->champion->name }}">
-                    <p class="mt-4 text-3xl font-extrabold text-white" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">
-                        {{ $tournament->champion->name }}
-                    </p>
-                </div>
-            </div>
+        <div class="bg-gray-900 border border-gray-900 rounded-xl shadow-lg p-6 md:p-8 mb-8">
+    <div class="flex flex-col md:flex-row justify-center items-center gap-8">
+        
+        {{-- Banner do Torneio (sem alterações) --}}
+        @if($tournament->banner)
+            <img src="{{ asset('images/tournament_banners/' . basename($tournament->banner)) }}"
+                 alt="Banner do Torneio"
+                 class="w-full md:w-[640px] h-auto md:h-[340px] object-cover rounded-lg shadow-lg border-2 border-gray-600 flex-shrink-0">
         @endif
-        {{-- ### FIM: SEÇÃO DO CAMPEÃO ### --}}
 
+        {{-- Informações do Torneio e do Campeão (sem alterações) --}}
+        <div class="flex-1 max-w-2xl text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3">{{ $tournament->name }}</h1>
+            <p class="text-xl md:text-2xl text-yellow-400">Status: {{ ucfirst(str_replace('_', ' ', $tournament->status)) }}</p>
+
+            {{-- Seção do Campeão (já estava dentro e continua aqui) --}}
+            @if ($tournament->status === 'completed' && $tournament->champion)
+                <div class="max-w-md mx-auto md:mx-0 mt-6 p-4 bg-gray-900 border-2 border-yellow-500 rounded-lg shadow-2xl text-center">
+                    <h3 class="text-lg font-bold text-yellow-300">🏆 EQUIPE CAMPEÃ 🏆</h3>
+                    <a href="{{ route('teams.show', $tournament->champion->id) }}" class="group block mt-3 focus:outline-none focus:ring-2 focus:ring-yellow-200 rounded-lg">
+                        <div class="flex flex-col items-center">
+                            <img class="w-16 h-16 rounded-full border-4 border-white shadow-lg transition-transform duration-300 group-hover:scale-110"
+                                 src="{{ $tournament->champion->picture ? asset('images/team_pictures/' . $tournament->champion->picture) : asset('images/default-team-logo.png') }}"
+                                 alt="Logo {{ $tournament->champion->name }}">
+                            
+                            <p class="mt-3 text-2xl font-extrabold text-white transition-colors duration-300 group-hover:text-yellow-100" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">
+                                {{ \Illuminate\Support\Str::limit($tournament->champion->name, 20) }}
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
 
         {{-- Contêiner do Bracket --}}
-        <p style="font-size: 0.9em; color: #666;">*BYE = Time que avança para a próxima rodada sem precisar jogar.</p>
+        <p style="font-size: 0.9em; color: #474747;">*BYE = Time que avança para a próxima rodada sem precisar jogar.</p>
         <div class="bracket-container" id="custom-bracket">
             @if($rounds->isEmpty())
                 <p class="text-gray-400 text-center w-full py-10">O bracket ainda não foi gerado.</p>
@@ -76,7 +79,6 @@
                             <h3 class="round-title">Rodada {{ $roundNumber }}</h3>
                             <div class="matches-list">
                                 @foreach($matchupsInRound as $match)
-                                    {{-- Lógica para exibir cada .match-box (permanece a mesma) --}}
                                     <div class="match-box {{ $match->status === 'live' ? 'match-live' : '' }}">
                                         @php
                                             $team1_extra_class = ($match->winner_id == $match->team1_id) ? 'winner' : (($match->winner_id) ? 'loser' : '');
@@ -90,12 +92,25 @@
                                             <span>{{ $match->team2->name ?? 'N/A' }}</span>
                                             <span class="score">{{ $match->team2_score ?? '-' }}</span>
                                         </div>
+                                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-700">
+                                                
+                                                {{-- ID da Partida (Esquerda) - pequeno e com cor sutil --}}
+                                                <span class="text-xs text-gray-500 font-mono">
+                                                    ID: {{ $match->id }}
+                                                </span>
 
-                                        @if($match->team1_id && $match->team2_id)
-                                        <a href="{{ route('matches.show', $match->id) }}" class="match-details-link">Gerenciar Partida</a>
-                                        @elseif ($match->team1_id && !$match->team2_id)
-                                        <p class="text-xs text-gray-500 italic mt-1">{{$match->team1->name}} avançou (BYE)</p>
-                                        @endif
+                                                {{-- Link/Texto de Bye (Direita) --}}
+                                                <div>
+                                                    @if($match->team1_id && $match->team2_id)
+                                                        <a href="{{ route('matches.show', $match->id) }}" class="match-details-link">
+                                                            Gerenciar Partida
+                                                        </a>
+                                                    @elseif ($match->team1_id && !$match->team2_id)
+                                                        <p class="text-xs text-gray-400 italic">{{$match->team1->name}} avançou (BYE)</p>
+                                                    @endif
+                                                </div>
+
+                                            </div>
                                     </div>
                                 @endforeach
                             </div>

@@ -4,14 +4,6 @@
 
 @section('content')
 <style>
-    body {
-        background-color: #12151c;
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-    }
-
     .pageheader-section {
         min-height: 60vh;
         background-size: cover;
@@ -229,10 +221,25 @@
         <div class="profile-wrapper">
             {{-- Team Card --}}
             <div class="profile-card">
-                <img class="profile-avatar" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-picture.jpg') }}" alt="{{ $team->name }}">
+                @auth
+                    @if (Auth::id() === $team->leader_id)
+                        <form id="team-picture-form" action="{{ route('teams.updatePicture', $team->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <input type="file" name="picture" id="team-picture-input" accept="image/*" style="display: none;" onchange="document.getElementById('team-picture-form').submit();">                            
+                            <label for="team-picture-input" style="cursor: pointer;" title="Clique para alterar a foto do time">
+                                <img class="profile-avatar" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-picture.jpg') }}" alt="{{ $team->name }}">
+                            </label>
+                        </form>
+                    @else
+                        <img class="profile-avatar" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-picture.jpg') }}" alt="{{ $team->name }}">
+                    @endif
+                @else
+                    <img class="profile-avatar" src="{{ $team->picture ? asset('images/team_pictures/' . $team->picture) : asset('images/team_pictures/default-team-picture.jpg') }}" alt="{{ $team->name }}">
+                @endauth
+
                 <div class="profile-info">
                 <div class="profile-name">{{ $team->name }}</div>
-                <div class="profile-description">Líder: {{ $team->leader->name }}</div>
+                <div class="profile-description">Líder: {{ $team->leader->nickname }}</div>
 
                 {{-- Contêiner para os botões de ação --}}
                 <div class="flex justify-between items-center mt-4">
@@ -241,12 +248,23 @@
                     <div>
                         @auth
                             @if (Auth::id() === $team->leader_id)
-                                <a href="{{ route('teams.manage', $team->id) }}" class="btn btn-primary" style="margin-right: 10px;">Gerenciar Time</a>
-                                @can('update', $team)
-                                <button onclick="generateInviteLink('{{ $team->id }}')" class="btn-primary">
-                                    Gerar convite
-                                </button>
-                                @endcan
+                                
+                                {{-- ### INÍCIO DA CORREÇÃO ### --}}
+                                {{-- Adicionamos as classes flex, items-center e gap-4 ao contêiner --}}
+                                <div class="flex items-center gap-4">
+                                    
+                                    {{-- O link "Gerenciar Time", agora sem o style de margem --}}
+                                    <a href="{{ route('teams.manage', $team->id) }}" class="btn btn-primary">Gerenciar Time</a>
+
+                                    @can('update', $team)
+                                        <button onclick="generateInviteLink('{{ $team->id }}')" class="btn-primary">
+                                            Gerar convite
+                                        </button>
+                                    @endcan
+
+                                </div>
+                                {{-- ### FIM DA CORREÇÃO ### --}}
+
                             @endif
                         @endauth
                     </div>
@@ -279,7 +297,7 @@
                             </button>
                         </div>
                         <small class="text-muted" id="invite-expires-{{ $team->id }}"></small>
-                        <small class="text-muted d-block">This link can be used by multiple players</small>
+                        <small class="text-muted d-block">Esse link de convite pode ser usado por múltiplos usuários!</small>
                     </div>
                 @endcan
             </div>
@@ -291,10 +309,10 @@
                 <div class="roster-container" id="sortable-roster">
                     <!-- Leader (fixed first position) -->
                     <div class="roster-member leader" data-user-id="{{ $team->leader->id }}">
-                        <img src="{{ $team->leader->profile_picture ? asset('images/profile_pictures/' . $team->leader->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}" alt="{{ $team->leader->name }}">
+                        <img src="{{ $team->leader->profile_picture ? asset('images/profile_pictures/' . $team->leader->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}" alt="{{ $team->leader->nickname }}">
                         <div class="roster-member-name">
-                            <a href="{{ route('users.show', $team->leader->name) }}" class="roster-member-name">
-                                {{ $team->leader->name }}
+                            <a href="{{ route('users.show', $team->leader->nickname) }}" class="roster-member-name">
+                                {{ $team->leader->nickname }}
                             </a>
                         </div>
                         <div class="roster-member-role">Líder</div>
@@ -304,10 +322,10 @@
                     @foreach ($team->members->where('id', '!=', $team->leader_id) as $member)
                         <div class="roster-member @if($loop->index < 4) active @else backup @endif" 
                              data-user-id="{{ $member->id }}">
-                            <img src="{{ $member->profile_picture ? asset('images/profile_pictures/' . $member->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}" alt="{{ $member->name }}">
+                            <img src="{{ $member->profile_picture ? asset('images/profile_pictures/' . $member->profile_picture) : asset('images/profile_pictures/default-profile-picture.jpg') }}" alt="{{ $member->nickname }}">
                             <div class="roster-member-name">
-                                <a href="{{ route('users.show', $member->name) }}" class="roster-member-name">
-                                    {{ $member->name }}
+                                <a href="{{ route('users.show', $member->nickname) }}" class="roster-member-name">
+                                    {{ $member->nickname }}
                                 </a>
                             </div>
                             <div class="roster-member-role">
