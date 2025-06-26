@@ -3,8 +3,25 @@
 @section('title', 'Torneios')
 
 @section('content')
+<style> 
+    .pageheader-section {
+        min-height: 10px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+    }
+
+    .tournament-section{
+        background: linear-gradient(135deg, #0e2349 10%, #3b182d 100%);
+    }
+    
+</style>
     <!-- ===========Banner Section start Here========== -->
-    <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+    <section class="pageheader-section">
         
             <div class="container mx-auto py-12 px-4">
                 <!-- Main Content Area - Full Width -->
@@ -99,7 +116,7 @@
                     <!-- Tournaments Grid - Full Width -->                    
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         @forelse($tournaments as $tournament)
-                        <div class="bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition duration-300">
+                        <div class="tournament-section bg-gray-800 rounded-lg overflow-hidden hover:transform hover:scale-105 transition duration-300">
                             <!-- Tournament Banner (Full Width) -->
                             @if($tournament->banner)
                                 <div class="w-full h-72 overflow-hidden">
@@ -115,26 +132,19 @@
                                     {{ \Illuminate\Support\Str::limit($tournament->name, 30) }}
                                 </h3>
                                 
-                                <!-- Date and Time Row -->
                                 <div class="flex items-center gap-3 mb-4">
                                 @php
-                                // Define o local do Carbon para Português do Brasil
                                 \Carbon\Carbon::setLocale('pt_BR');
 
-                                // Pega a hora atual no seu fuso horário para uma comparação precisa
                                 $nowCarbon = \Carbon\Carbon::now('America/Sao_Paulo');
 
-                                // --- ESTA É A LINHA CORRIGIDA ---
-                                // Nós juntamos a data e a hora do torneio para criar um objeto Carbon completo e preciso.
                                 $tournamentDateCarbon = \Carbon\Carbon::parse($tournament->tournament_date . ' ' . $tournament->time, 'America/Sao_Paulo');
 
-                                // O resto da sua lógica original, que agora funcionará corretamente
-                                $isFutureEvent = $tournamentDateCarbon->isAfter($nowCarbon); // Usar isAfter() é mais claro que isFuture() para evitar bugs de milissegundos
+                                $isFutureEvent = $tournamentDateCarbon->isAfter($nowCarbon); 
                                 
-                                // Usamos o valor absoluto da diferença, pois diffInSeconds pode ser negativo
                                 $totalSecondsDifference = abs($tournamentDateCarbon->diffInSeconds($nowCarbon));
 
-                                $formattedTimeDifference = ''; // Variável para armazenar o resultado formatado
+                                $formattedTimeDifference = '';
 
                                 if (!$isFutureEvent && $totalSecondsDifference < 60) {
                                     $formattedTimeDifference = 'agora';
@@ -171,18 +181,15 @@
                                     }
                                 }
 
-                                // A sua lógica para $tagText e $tagClass já deve funcionar melhor com a data/hora correta
                                 $tagText = '';
                                 $tagClass = '';
                                 
                                 if ($isFutureEvent) {
-                                    // ... sua lógica para "EM X DIAS", "EM X HORAS", etc. ...
-                                    // Essa parte já deve funcionar melhor agora. Por exemplo:
-                                    $tagText = "EM " . $tournamentDateCarbon->diffForHumans(null, true, false, 2); // Exibe "em 2 dias", "em 5 horas"
+                                    $tagText = "EM " . $tournamentDateCarbon->diffForHumans(null, true, false, 2);
                                     $tagClass = 'bg-indigo-600';
                                 } else {
                                     $hoursPassedSinceStart = $nowCarbon->diffInHours($tournamentDateCarbon);
-                                    if ($hoursPassedSinceStart <= 3) { // Janela de "AO VIVO"
+                                    if ($hoursPassedSinceStart <= 3) { 
                                         $tagText = "AO VIVO";
                                         $tagClass = 'bg-green-600';
                                     } else {

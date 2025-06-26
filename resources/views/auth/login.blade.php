@@ -3,8 +3,20 @@
 @section('title', 'Meus Torneios')
 
 @section('content')
-	<!-- ===========Banner Section start Here========== -->
-	<section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+<style> 
+    .pageheader-section {
+        min-height: 10px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+    }
+    
+</style>
+	<section class="pageheader-section">
 		<div class="container">
             <div class="section-wrapper text-center text-uppercase">
                 <h2 class="pageheader-title">Entre para competir</h2>
@@ -17,11 +29,7 @@
             </div>
 		</div>
 	</section>
-	<!-- ===========Banner Section Ends Here========== -->
 
-
-
-        <!-- Login Section Starts Here -->
     <div class="login-section padding-top padding-bottom">
         <div class="container">
                 <div class="account-wrapper">

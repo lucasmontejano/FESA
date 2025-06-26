@@ -8,9 +8,20 @@
         [x-cloak] {
         display: none !important;
     }
+
+    .pageheader-section {
+        min-height: 10px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+    }
     </style>
 
-    <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+    <section class="pageheader-section">
         <div class="container mx-auto py-8">
             <!-- Tournament Header -->
             <div class="flex flex-col md:flex-row gap-6 mb-8">
@@ -39,7 +50,7 @@
                         
                         <div class="flex items-center">
                             <i class="icofont-group mr-2"></i>
-                            <span>{{ $participants_count }}/{{ $tournament->max_participants }} participantes</span>
+                            <span>{{ $participants_count }}/{{ $tournament->max_participants }} equipes participantes</span>
                         </div>
                         <div class="flex items-center">
                             <i class="icofont-group mr-2"></i>

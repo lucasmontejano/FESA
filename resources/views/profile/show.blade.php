@@ -7,7 +7,7 @@
     
 
     .pageheader-section {
-        min-height: 120vh;
+        min-height: 80vh;
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -42,7 +42,7 @@
         height: 180px;
         border-radius: 50%;
         object-fit: cover;
-        border: 3px solid #4da6ff;
+        border: 5px solid #4da6ff;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         transition: transform 0.3s ease;
     }

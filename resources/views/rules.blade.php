@@ -3,6 +3,20 @@
 @section('title', 'Regras da Plataforma')
 
 @section('content')
+
+<style> 
+    .pageheader-section {
+        min-height: 10px;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 10px;
+    }
+    
+</style>
 <div class="pageheader-section relative overflow-hidden" style="background: linear-gradient(135deg, #1c2738 0%, #101930 50%, #35143b 100%);">
     <div class="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-pink-600/20"></div>
     <div class="absolute inset-0 opacity-10">

@@ -5,7 +5,7 @@
 @section('content')
 <style>
     .pageheader-section {
-        min-height: 60vh;
+        min-height: 0px;
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -210,16 +210,14 @@
         display: inline-block;
     }
 
-    /* Hide scrollbar but keep functionality */
     .roster-container::-webkit-scrollbar {
         display: none;
     }
 </style>
 
-<div style="padding-top: 100px;">
-    <section class="pageheader-section" style="background-image: url('{{ asset('images/pageheader/bg.jpg') }}');">
+
+    <section class="pageheader-section">
         <div class="profile-wrapper">
-            {{-- Team Card --}}
             <div class="profile-card">
                 @auth
                     @if (Auth::id() === $team->leader_id)
@@ -264,7 +262,6 @@
 
                     <div>
                         @auth
-                            {{-- Condição: Mostra o botão apenas se o usuário logado for membro E NÃO for o líder --}}
                             @if ($team->members->contains(Auth::user()) && Auth::id() !== $team->leader_id)
                                 <form action="{{ route('teams.leave', $team->id) }}" method="POST" onsubmit="return confirm('Você tem certeza que deseja sair do time \'{{ $team->name }}\'?');">
                                     @csrf
@@ -333,7 +330,7 @@
             </div>
         </div>
     </section>
-</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script>
