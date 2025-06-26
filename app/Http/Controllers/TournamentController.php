@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use App\Services\TournamentService;
 
 class TournamentController extends Controller
 {
@@ -408,5 +409,28 @@ class TournamentController extends Controller
         }
         
         return view('tournaments.bracket', compact('tournament', 'rounds', 'currentUserTeamMatchId', 'isParticipant', 'formattedMatchups', 'participantTeamsForBracket'));
+    }
+
+    public function startNow(Tournament $tournament, TournamentService $tournamentService)
+    {
+        // Valida se o torneio está em um estado que permite o início manual
+        if ($tournament->status !== 'registration_open') {
+            return back()->with('error', 'Este torneio não pode ser iniciado pois as inscrições já foram encerradas ou ele já está ativo/finalizado.');
+        }
+        
+        if ($tournament->teams()->count() < 2) {
+            return back()->with('error', 'Não é possível iniciar o torneio com menos de 2 times inscritos.');
+        }
+
+        // Chama o serviço para fazer o trabalho
+        $success = $tournamentService->startTournament($tournament);
+
+        if ($success) {
+            // Se tudo deu certo, redireciona para a página do bracket
+            return redirect()->route('tournaments.bracket', $tournament)->with('success', 'O torneio foi iniciado e o bracket gerado com sucesso!');
+        }
+
+        // Se o serviço retornou false (ex: cancelado por falta de times)
+        return redirect()->route('tournaments.show', $tournament)->with('info', 'O torneio foi cancelado por não ter o número mínimo de equipes.');
     }
 }

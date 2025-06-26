@@ -359,7 +359,7 @@
                                         Jogo: {{ $tournament->game ?? 'N/A' }}
                                     </span>
                                     <span style="font-size: 0.9em; color: #aaa; display: block;">
-                                        Data: {{ $tournament->tournament_date ? \Carbon\Carbon::parse($tournament->tournament_date)->format('d/m/Y \a\s H:i') : 'N/A' }}
+                                        Data: {{ \Carbon\Carbon::parse($tournament->tournament_date . ' ' . $tournament->time)->translatedFormat('d/m/Y \à\s H:i') }} 
                                     </span>
                                 </div>
                             </div>

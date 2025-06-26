@@ -607,7 +607,8 @@
 
                         <div class="detailed-game-description-container">
                             <h4>Participe dos torneios e concorra a prêmios!</h4>
-                            <p>Já pensou em competir, se divertir e ainda ganhar prêmios? Participe dos torneios da Fatec E-Sports Arena!</p>
+                            <p>Já pensou em competir, se divertir e ainda ganhar prêmios? <br>
+                                Participe dos torneios da Fatec E-Sports Arena e prove seu valor nos campos de batalha!</p>
                         </div>
                     </div>
 

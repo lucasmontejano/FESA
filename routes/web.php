@@ -111,5 +111,11 @@ Route::get('/matches/{match}', [MatchController::class, 'show'])->name('matches.
 Route::post('/matches/{match}/set-winner', [MatchController::class, 'setWinner'])->name('matches.setWinner')->middleware('auth', 'admin');
 
 Route::get('/tournaments/{tournament}/status', [TournamentStatusController::class, 'show'])
-    ->name('tournaments.status') // Dê um nome à rota (boa prática)
-    ->middleware('auth'); // Garante que apenas usuários logados podem acessá-la
+    ->name('tournaments.status')
+    ->middleware('auth');
+
+Route::post('/tournaments/{tournament}/start', [TournamentController::class, 'startNow'])->name('tournaments.startNow')->middleware(['auth', 'admin']);
+
+Route::get('/rules', function () {
+    return view('rules');
+})->name('rules');

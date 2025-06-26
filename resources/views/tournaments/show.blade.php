@@ -154,6 +154,17 @@
             @endauth
                         @if (auth()->check() && auth()->id() === $tournament->user_id)
                             <div x-data="{ editing: false }">  <div class="flex justify-end mb-4 space-x-2">
+
+                                    {{-- Botão para Iniciar o Torneio Manualmente --}}
+                                    @if($tournament->status === 'registration_open')
+                                        <form action="{{ route('tournaments.startNow', $tournament) }}" method="POST" onsubmit="return confirm('Isso irá fechar as inscrições e gerar o bracket. Deseja continuar?');">
+                                            @csrf
+                                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                                                Iniciar Torneio Agora
+                                            </button>
+                                        </form>
+                                    @endif
+                                    
                                     <button @click="editing = true"
                                             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                                         Editar Torneio

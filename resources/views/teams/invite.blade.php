@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Convite para time')
+
 @section('content')
 
 @if(!$invite->isValid())

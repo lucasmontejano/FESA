@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Meus Torneios')
+@section('title', 'Torneios')
 
 @section('content')
     <!-- ===========Banner Section start Here========== -->
@@ -328,7 +328,7 @@
                                                     class="w-full bg-gray-700 text-white rounded-lg p-4 border border-gray-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 appearance-none cursor-pointer"
                                                     required>
                                                 <option value="" disabled selected>Selecione uma opção</option>
-                                                <option value="16">8 equipes</option>
+                                                <option value="8">8 equipes</option>
                                                 <option value="16">16 equipes</option>
                                                 <option value="32">32 equipes</option>
                                                 <option value="64">64 equipes</option>
