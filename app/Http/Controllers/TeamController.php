@@ -165,69 +165,60 @@ class TeamController extends Controller
 
     public function generateInviteUrl(Team $team)
     {
-        $this->authorize('update', $team); // Good: Authorize first
+        $this->authorize('update', $team);
     
-        // Check if team is full before generating a new link
         if (!$team->canAddMember()) {
             return response()->json(['message' => 'A equipe está cheia e não pode aceitar novos membros no momento.'], 400);
         }
 
-        $invite = TeamInvite::updateOrCreate( // Assuming TeamInvite model exists
+        $expiresAt = now('America/Sao_Paulo')->addDays(7)->setTimezone('UTC');
+
+        $invite = TeamInvite::updateOrCreate(
             [
                 'team_id' => $team->id,
                 'sender_id' => auth()->id()
             ],
             [
-                'token' => Str::random(32), // Generate a new token
-                'expires_at' => now()->addDays(7), // Or now()->addHours(24) if you prefer 24hr expiry
-                'max_uses' => 6,  // <<< Set max uses to 6
-                'uses' => 0       // <<< Reset current uses to 0
+                'token' => Str::random(32),
+                'expires_at' => $expiresAt,
+                'max_uses' => 6,
+                'uses' => 0
             ]
         );
 
         return response()->json([
             'url' => route('teams.acceptInvite', $invite->token),
-            'expires' => $invite->expires_at->diffForHumans(), // "in 7 days", "in 24 hours"
+            'expires' => 'Expira ' . $invite->expires_at->setTimezone('America/Sao_Paulo')->diffForHumans(),
             'max_uses' => $invite->max_uses,
-            'uses_left' => $invite->max_uses - $invite->uses // Will be 6 for a new/refreshed link
+            'uses_left' => $invite->max_uses - $invite->uses
         ]);
     }
 
     public function acceptInvite($token)
     {
-        $invite = TeamInvite::where('token', $token)
-                                    ->where('expires_at', '>', now())
-                                    ->with('team')
-                                    ->first();
+        $invite = \App\Models\TeamInvite::where('token', $token)->with('team')->first();
 
-        if (!$invite) {
-            return redirect()->route('teams.index')->with('error', 'Link de convite inválido.');
+        // Uma única verificação, limpa e centralizada
+        if (!$invite || !$invite->isValid()) {
+            return redirect()->route('dashboard')->with('error', 'Link de convite inválido, expirou ou o time está cheio.');
+        }
+        
+        $team = $invite->team;
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        if ($team->members()->where('user_id', $user->id)->exists()) {
+            return redirect()->route('teams.show', $team->id)->with('info', 'Você já é membro deste time.');
         }
 
-        if ($invite->expires_at->isPast()) {
-            return redirect()->route('teams.index')->with('error', 'Este link de convite expirou.');
-        }
+        // Adiciona o membro ao time
+        $role = $team->canAddActiveMember() ? 'active' : 'backup';
+        $team->members()->attach($user->id, ['role' => $role, 'joined_at' => now()]);
 
-        if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-            return redirect()->route('teams.index')->with('error', 'Este link de convite já atingiu o número máximo de usos.');
-        }
+        \App\Models\TeamInvite::where('id', $invite->id)->increment('uses');
 
-        $role = $invite->team->canAddActiveMember() ? 'active' : 'backup';
-        $invite->team->members()->attach(auth()->id(), [
-            'role' => $role,
-            'joined_at' => now()
-        ]);
-
-        //$invite->increment('uses');
-        $invite->uses = $invite->uses + 1;
-        $invite->timestamps = false; 
-        $invite->save(['touch' => false]); 
-        $invite->timestamps = true;
-
-        $invite->refresh();
-
-        if (isset($invite->max_uses) && $invite->uses >= $invite->max_uses) {
-            $invite->delete(); // Comente temporariamente para inspeção no BD
+        $currentUses = $invite->uses + 1;
+        if (isset($invite->max_uses) && $currentUses >= $invite->max_uses) {
+            $invite->delete();
         }
 
         return redirect()->route('teams.show', $invite->team_id)
@@ -330,17 +321,14 @@ class TeamController extends Controller
 
     public function updatePicture(Request $request, Team $team)
     {
-        // 1. Autorização: Garante que apenas o líder do time pode mudar a foto.
         if (Auth::id() !== $team->leader_id) {
             abort(403, 'Ação não autorizada.');
         }
 
-        // 2. Validação: Garante que o arquivo enviado é uma imagem válida.
         $request->validate([
             'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // max 2MB
         ]);
 
-        // 3. Deleta a foto antiga (se existir)
         if ($team->picture) {
             $oldPicturePath = public_path('images/team_pictures/' . $team->picture);
             if (File::exists($oldPicturePath)) {
@@ -348,16 +336,13 @@ class TeamController extends Controller
             }
         }
 
-        // 4. Salva a nova foto
         $imageFile = $request->file('picture');
         $imageName = time() . '.' . $imageFile->getClientOriginalExtension();
         $imageFile->move(public_path('images/team_pictures'), $imageName);
 
-        // 5. Atualiza o registro no banco de dados
         $team->picture = $imageName;
         $team->save();
 
-        // 6. Redireciona de volta com uma mensagem de sucesso
         return back()->with('success', 'Foto do time atualizada com sucesso!');
     }
 }

@@ -19,12 +19,6 @@ class TeamInvite extends Model
             $this->team->canAddMember();
     }
 
-    public function incrementUses()
-    {
-        $this->increment('uses');
-        $this->save();
-    }
-
     public function team()
     {
         return $this->belongsTo(Team::class);

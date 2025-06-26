@@ -1,42 +1,209 @@
 @extends('layouts.app')
 
-@section('title', 'Página Principal') {{-- Changed title for clarity --}}
+@section('title', 'Página Principal')
 
 @section('content')
     <style>
-        .banner-section {
-            max-width: 1500px; /* ADJUSTED */
-            margin: 40px auto; /* ADJUSTED for overall spacing */
+        /* Hero Section with Game Cards */
+        .hero-section {
+            background: linear-gradient(135deg, #0e2349 10%, #3b182d 100%);
+            padding: 80px 0 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(233, 30, 99, 0.05) 100%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .hero-title h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #e91e63 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-title p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .game-card {
+            position: relative;
+            height: 280px;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .game-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .game-card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 25px;
+            transition: background 0.3s ease;
+        }
+
+        .game-card:hover .game-card-overlay {
+            background: linear-gradient(45deg, rgba(233, 30, 99, 0.8) 0%, rgba(233, 30, 99, 0.4) 100%);
+        }
+
+        .game-card-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-card-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .game-card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+            align-self: flex-start;
+        }
+
+        .game-card-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Banner and FAQ Section */
+
+        .full-width-section {
+            width: 100%;
+            background-color: #f8f9fa; /* Exemplo de cor de fundo, ajuste como preferir */
+            padding: 20px 20px; /* Padding vertical e um pequeno padding horizontal para telas pequenas */
+        }
+
+        .container {
+            max-width: 1800px; /* A largura máxima que você queria */
+            margin: 0 auto;    /* Centraliza o contêiner */
+        }
+
+        .banner-faq-section {
+            max-width: 1800px;
+            margin: -160px auto 20px;
             padding: 20px;
         }
 
-        .carousel-wrapper {
+        .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #e91e63 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .banner-faq-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .banner-container {
             position: relative;
-            height: 720px; /* ADJUSTED */
+            width: 100%; /* Ocupa 100% da coluna da grade */
+            padding-top: 56.25%; /* Proporção de 16:9 (altura é 56.25% da largura) - AJUSTE SE NECESSÁRIO */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .compact-carousel {
-            height: 100%;
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .compact-carousel::-webkit-scrollbar { display: none; }
-        .compact-carousel { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .banner-slide {
-            flex: 0 0 100%;
-            scroll-snap-align: start;
-            position: relative;
-        }
-
-        .banner-slide img {
+        /* A imagem agora preenche o contêiner de forma absoluta */
+        .banner-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -49,7 +216,7 @@
             right: 30px;
             max-width: 500px;
             color: white;
-            background: rgba(0,0,0,0.5); /* Added subtle background for readability */
+            background: rgba(0,0,0,0.5);
             padding: 15px;
             border-radius: 8px;
         }
@@ -60,6 +227,7 @@
             border-radius: 20px;
             font-size: 14px;
             margin-bottom: 10px;
+            background: #1DA1F2;
         }
 
         .banner-title {
@@ -80,209 +248,489 @@
             text-decoration: none;
             font-weight: 500;
             color: white;
+            background: #1DA1F2;
         }
 
-        .nav-dots {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 10;
+        .banner-button:hover {
+            color: white;
+            text-decoration: none;
         }
 
-        .nav-dots button {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            border: none;
-            cursor: pointer;
-            padding: 0; /* Ensure button styles don't interfere with size */
-            transition: background-color 0.3s ease; /* Smooth transition for active dot */
-        }
-        .nav-dots button.active { /* Style for the active dot */
-            background: white;
-        }
-
-        /* NEW: Styles for Detailed Description Area */
         .detailed-game-description-container {
             margin-top: 25px;
-            padding: 20px;
-            background-color: #1c1c29; /* Dark background, adjust to your theme */
-            border-radius: 8px;
+            padding: 25px;
+            background: linear-gradient(135deg, #0e2349 10%, #3b182d 100%);
+            border-radius: 12px;
             color: #e0e0e0;
-            min-height: 120px; /* Adjust as needed */
+            min-height: 120px;
             text-align: left;
-            border: 1px solid #333;
+            border: 2px solid rgba(233, 30, 99, 0.2);
         }
 
         .detailed-game-description-container h4 {
-            font-size: 1.75em; /* ~28px */
+            font-size: 1.75em;
             color: #ffffff;
             margin-bottom: 12px;
         }
 
         .detailed-game-description-container p {
-            font-size: 1em; /* ~16px */
+            font-size: 1em;
             line-height: 1.7;
-            white-space: pre-line; /* Respect newlines in the description text */
+            white-space: pre-line;
+        }
+
+        /* FAQ Styles */
+        .faq-container {
+            background: linear-gradient(135deg, #3b182d 10%, #0e2349 100%);
+            border-radius: 20px;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .faq-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.05) 0%, rgba(233, 30, 99, 0.02) 100%);
+            z-index: 1;
+        }
+
+        .faq-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .faq-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .faq-header h3 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #e91e63 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .faq-header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .faq-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .faq-item {
+            background: linear-gradient(135deg, rgba(26, 35, 50, 0.9) 0%, rgba(44, 62, 80, 0.8) 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(233, 30, 99, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-item:hover {
+            border-color: rgba(233, 30, 99, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .faq-item.active {
+            border-color: #e91e63;
+        }
+
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: left;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            color: #e91e63;
+        }
+
+        .faq-question .question-text {
+            flex: 1;
+            margin-right: 15px;
+        }
+
+        .faq-icon {
+            font-size: 1.2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #e91e63;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(233, 30, 99, 0.05) 100%);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 400px;
+        }
+
+        .faq-answer-content {
+            padding: 0 20px 20px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .faq-answer-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .faq-cta {
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(233, 30, 99, 0.05) 100%);
+            border-radius: 15px;
+            border: 2px solid rgba(233, 30, 99, 0.2);
+        }
+
+        .faq-cta h4 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .faq-cta p {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .faq-cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3);
+        }
+
+        .faq-cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-section .games-grid .game-card:nth-child(1) {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 0s;
+        }
+
+        .hero-section .games-grid .game-card:nth-child(2) {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 2s;
+        }
+
+        .hero-section .games-grid .game-card:nth-child(3) {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 4s;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .banner-faq-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .banner-container {
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title h1 {
+                font-size: 2.5rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 15px;
+            }
+
+            .game-card {
+                height: 250px;
+            }
+
+            .section-title h2 {
+                font-size: 2rem;
+            }
+
+            .banner-container {
+                height: 350px;
+            }
+
+            .faq-header h3 {
+                font-size: 2rem;
+            }
+
+            .faq-question {
+                padding: 15px;
+                font-size: 0.95rem;
+            }
+
+            .faq-answer-content {
+                padding: 0 15px 15px;
+            }
+        }
+
+        /* Background Decorations */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(233, 30, 99, 0.05) 100%);
+            border-radius: 50%;
+            z-index: 1;
         }
     </style>
 
-    {{-- The pageheader-section might be for a background, ensure it doesn't conflict with banner-section sizing --}}
-    <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
-        <div class="container"> {{-- Added a container for better structure if pageheader is full-width --}}
-            <section class="banner-section">
-                <div class="carousel-wrapper">
-                    <div class="compact-carousel">
-                        
-                        <div class="banner-slide"
-                             data-game-title="Participe dos torneios e concorra a prêmios!"
-                             data-detailed-description="Já pensou em competir, se divertir e ainda ganhar prêmios? Participe dos torneios da Fatec E-Sports Arena!">
-                            <img loading="lazy" src="{{ asset('images/banner/FESA-banner.jpg') }}" alt="LoL Tournaments" />
-                            <div class="banner-caption">
-                                <span class="banner-tag" style="background: #1DA1F2;">Em Alta</span>
-                                <h3 class="banner-title">Participe Já!</h3>
-                                <p class="banner-description">Campeonatos semestrais dos seus jogos favoritos!</p>
-                                <a href="/dashboard" class="banner-button" style="background: #1DA1F2;">Participe Já</a>
-                            </div>
-                        </div>
-
-                        <div class="banner-slide"
-                             data-game-title="League of Legends"
-                             data-detailed-description="Domine o Rift em nossos torneios de League of Legends! Com batalhas 5v5 e fases de grupos playoffs emocionantes. Prepare suas melhores estratégias e campeões para concorrer a prêmios! Participe à batalha!">
-                            <img loading="lazy" src="{{ asset('images/banner/lol-banner.jpg') }}" alt="LoL Tournaments" />
-                            <div class="banner-caption">
-                                <span class="banner-tag" style="background: #1DA1F2;">Campeonato</span>
-                                <h3 class="banner-title">League of Legends</h3>
-                                <p class="banner-description">Campeonatos semestrais de League of Legends!</p>
-                                <a href="/dashboard?game=LOL" class="banner-button" style="background: #1DA1F2;">Cadastre-se Já</a>
-                            </div>
-                        </div>
-
-                        <div class="banner-slide"
-                             data-game-title="Valorant"
-                             data-detailed-description="Mostre sua precisão tática nos campeonatos de Valorant! Participe em confrontos 5v5, ascenda nos rankings, desafie os melhores e conquiste recompensas exclusivas. Sua mira faz a diferença!">
-                            <img loading="lazy" src="{{ asset('images/banner/valorant-banner.jpg') }}" alt="Valorant dashboard" />
-                            <div class="banner-caption">
-                                <span class="banner-tag" style="background: #FF4655;">Campeonato</span>
-                                <h3 class="banner-title">Valorant</h3>
-                                <p class="banner-description">Campeonatos semestrais de Valorant!</p>
-                                <a href="/dashboard?game=VALORANT" class="banner-button" style="background: #FF4655;">Participe Agora</a>
-                            </div>
-                        </div>
-
-                        <div class="banner-slide"
-                             data-game-title="Counter-Strike 2"
-                             data-detailed-description="Ação frenética e estratégia de ponta nos torneios de CS2! Monte sua equipe, refine suas táticas e dispute prêmios! A lenda do CS continua aqui!">
-                            <img loading="lazy" src="{{ asset('images/banner/cs2-banner.png') }}" alt="CS2 dashboard" />
-                            <div class="banner-caption">
-                                <span class="banner-tag" style="background: #F97803;">Campeonato</span>
-                                <h3 class="banner-title">Counter-Strike 2</h3>
-                                <p class="banner-description">Campeonatos semestrais de Counter Strike 2!</p>
-                                <a href="/dashboard?game=CS2" class="banner-button" style="background: #F97803;">Crie Sua Equipe</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="nav-dots">
-                        
-                    </div>
+    {{-- Hero Section with Game Cards --}}
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-title">
+                    <h1>FATEC E-SPORTS ARENA</h1>
+                    <p>Participe dos melhores torneios e mostre suas habilidades nos jogos mais populares!</p>
                 </div>
 
-                <div id="detailed-game-description-area" class="detailed-game-description-container">
-                    <h4 id="detailed-game-title">League of Legends</h4>
-                    <p id="detailed-game-text">Domine o Rift em nossos torneios de League of Legends! Oferecemos formatos Solo/Duo e Equipes Fechadas 5v5, com fases de grupos e playoffs emocionantes. Prepare suas melhores estratégias e campeões para competir por prêmios incríveis e glória eterna. Junte-se à batalha!</p> {{-- Initial Description --}}
+                <div class="games-grid">
+                    <div class="game-card" onclick="window.location.href='/dashboard?game=LOL'">
+                        <img src="{{ asset('images/games/lol-card.jpg') }}" alt="League of Legends" loading="lazy">
+                        <div class="game-card-overlay">
+                            <h3 class="game-card-title">League of Legends</h3>
+                            <p class="game-card-description">Domine o Rift com estratégias épicas e batalhas 5v5 emocionantes.</p>
+                            <a href="/dashboard?game=LOL" class="game-card-btn">
+                                <i class="icofont-game-controller"></i>
+                                <span>Participar</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="game-card" onclick="window.location.href='/dashboard?game=VALORANT'">
+                        <img src="{{ asset('images/games/valorant-card.jpg') }}" alt="Valorant" loading="lazy">
+                        <div class="game-card-overlay">
+                            <h3 class="game-card-title">Valorant</h3>
+                            <p class="game-card-description">Precisão tática e estratégia em combates 5v5 intensos.</p>
+                            <a href="/dashboard?game=VALORANT" class="game-card-btn">
+                                <i class="icofont-aim"></i>
+                                <span>Competir</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="game-card" onclick="window.location.href='/dashboard?game=CS2'">
+                        <img src="{{ asset('images/games/cs2-card.jpg') }}" alt="Counter-Strike 2" loading="lazy">
+                        <div class="game-card-overlay">
+                            <h3 class="game-card-title">Counter-Strike 2</h3>
+                            <p class="game-card-description">A lenda continua com ação frenética e estratégias de elite.</p>
+                            <a href="/dashboard?game=CS2" class="game-card-btn">
+                                <i class="icofont-target"></i>
+                                <span>Jogar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Banner and FAQ Section --}}
+    <section class="pageheader-section" style="background-image: url(images/pageheader/bg.jpg);">
+        <div class="container">
+            <section class="banner-faq-section">
+                <div class="section-title">
+                    <h2>Dúvidas?</h2>
+                    <p>Sessão de dúvidas frequentes</p>
+                </div>
+
+                <div class="banner-faq-grid">
+                    {{-- Banner Container --}}
+                    <div class="banner-side">
+                        <div class="banner-container">
+                            <img loading="lazy" src="{{ asset('images/banner/FESA-banner.jpg') }}" alt="FESA Tournaments" />
+                            <div class="banner-caption">
+                                <span class="banner-tag">Em Alta</span>
+                                <h3 class="banner-title">Participe Já!</h3>
+                                <p class="banner-description">Campeonatos semestrais dos seus jogos favoritos!</p>
+                                <a href="/dashboard" class="banner-button">Participe Já</a>
+                            </div>
+                        </div>
+
+                        <div class="detailed-game-description-container">
+                            <h4>Participe dos torneios e concorra a prêmios!</h4>
+                            <p>Já pensou em competir, se divertir e ainda ganhar prêmios? Participe dos torneios da Fatec E-Sports Arena!</p>
+                        </div>
+                    </div>
+
+                    {{-- FAQ Container --}}
+                    <div class="faq-container">
+                        <div class="faq-content">
+                            <div class="faq-header">
+                                <h3>FAQ</h3>
+                                <p>Dúvidas sobre como competir?</p>
+                            </div>
+
+                            <div class="faq-list">
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span class="question-text">Como funciona a inscrição?</span>
+                                        <i class="icofont-simple-down faq-icon"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <div class="faq-answer-content">
+                                            <p><strong>1.</strong> Cadastre-se na plataforma<br>
+                                            <strong>2.</strong> Crie ou entre para uma equipe<br>
+                                            <strong>3.</strong> Convide seus amigos para a equipe (de 5-7 jogadores)<br>
+                                            <strong>4.</strong> Inscreva a equipe no torneio</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span class="question-text">Qual o custo para participar?</span>
+                                        <i class="icofont-simple-down faq-icon"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <div class="faq-answer-content">
+                                            <p><strong>A participação é totalmente gratuita!</strong> Nosso objetivo é fomentar a comunidade e a competição saudável.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span class="question-text">Em quais jogos posso competir?</span>
+                                        <i class="icofont-simple-down faq-icon"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <div class="faq-answer-content">
+                                            <p>No momento, temos 3 jogos disponíveis: <br>
+                                            <strong>League of Legends:</strong> Batalhas 5v5 épicas<br>
+                                            <strong>Valorant:</strong> Precisão tática em combates intensos<br>
+                                            <strong>Counter-Strike 2:</strong> Ação frenética e estratégias de elite<br>
+                                            <strong>Mais jogos em breve!</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span class="question-text">Quais as regras dos torneios?</span>
+                                        <i class="icofont-simple-down faq-icon"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <div class="faq-answer-content">
+                                            <p>Cada torneio possui um <strong>livro de regras</strong> diferente, portanto basta conferir na aba de <strong>"Regras"</strong> na página do torneio!</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="faq-item">
+                                    <button class="faq-question">
+                                        <span class="question-text">E se eu não tiver uma equipe?</span>
+                                        <i class="icofont-simple-down faq-icon"></i>
+                                    </button>
+                                    <div class="faq-answer">
+                                        <div class="faq-answer-content">
+                                            <p>Use nossa <strong>comunidade do Discord</strong> para encontrar companheiros!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="faq-cta">
+                                <h4>Preparado para competir?</h4>
+                                <a href="/dashboard" class="faq-cta-button">
+                                    <i class="icofont-rocket-alt-2"></i>
+                                    <span>Comece Agora</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
     </section>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const carousel = document.querySelector('.compact-carousel');
-            const slides = carousel.querySelectorAll('.banner-slide');
-            const navDotsContainer = document.querySelector('.banner-section .nav-dots'); 
-
-            const detailedGameTitleElement = document.getElementById('detailed-game-title');
-            const detailedGameTextElement = document.getElementById('detailed-game-text');
-
-            let currentSlideIndex = 0;
-            let autoRotateInterval;
-
-            function updateSlideDetails(index) {
-                if (index < 0 || index >= slides.length) return;
-
-                const activeSlide = slides[index];
-                detailedGameTitleElement.textContent = activeSlide.dataset.gameTitle || '';
-                detailedGameTextElement.textContent = activeSlide.dataset.detailedDescription || ''; 
-
-                Array.from(navDotsContainer.children).forEach((dot, dotIndex) => {
-                    dot.classList.toggle('active', dotIndex === index);
-                });
-                currentSlideIndex = index; 
-            }
-
-            window.scrollToSlide = function(index) { 
-                if (index < 0 || index >= slides.length) return;
-                carousel.scrollTo({
-                    left: carousel.clientWidth * index,
-                    behavior: 'smooth'
-                });
-                stopAutoRotation(); // Stop auto-rotation on manual navigation
-            }
-
-            // Generate Nav Dots
-            slides.forEach((slide, index) => {
-                const dot = document.createElement('button');
-                dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
-                dot.onclick = () => scrollToSlide(index);
-                navDotsContainer.appendChild(dot);
-            });
-
-            // Auto-rotation
-            function startAutoRotation() {
-                autoRotateInterval = setInterval(() => {
-                    let nextSlideIndex = (currentSlideIndex + 1) % slides.length;
-                    scrollToSlide(nextSlideIndex);
-                }, 4000);
-            }
-
-            function stopAutoRotation() {
-                clearInterval(autoRotateInterval);
-            }
-
-            // Intersection Observer to detect current slide
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Find the index of the intersecting slide
-                        const intersectingSlide = entry.target;
-                        const index = Array.from(slides).indexOf(intersectingSlide);
-                        if (index !== -1) {
-                            updateSlideDetails(index);
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // Fechar todas as outras perguntas
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
                         }
+                    });
+                    
+                    // Toggle da pergunta atual
+                    if (isActive) {
+                        item.classList.remove('active');
+                    } else {
+                        item.classList.add('active');
                     }
                 });
-            }, {
-                root: carousel, // The carousel itself is the scrollable area
-                threshold: 0.5  // Trigger when 50% of the slide is visible
             });
 
-            slides.forEach(slide => {
-                observer.observe(slide);
-            });
-
-            // Initial setup
-            if (slides.length > 0) {
-                updateSlideDetails(0); // Set initial description and dot
-                startAutoRotation();
-
-                // Stop auto-rotation on user interaction
-                carousel.addEventListener('pointerdown', stopAutoRotation, { once: true }); // Stop once on first interaction
-                carousel.addEventListener('wheel', stopAutoRotation, { once: true, passive: true });
-                carousel.addEventListener('touchstart', stopAutoRotation, { once: true, passive: true });
+            // Abrir a primeira pergunta por padrão
+            if (faqItems.length > 0) {
+                faqItems[0].classList.add('active');
             }
         });
     </script>

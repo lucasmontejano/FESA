@@ -69,27 +69,33 @@
 
     @include('layouts.header')
 
-    <!-- Main Content -->
-    <main>
-        <div class="container mx-auto px-4 pt-24 pb-6">
-            {{-- Display session messages (success, error, info) --}}
+    <main>  
+        <div class="container mx-auto px-4 pt-24 py-6">
             @if (session('success'))
-                <div class="mt-4 p-3 bg-green-200 text-green-800 rounded-md">
+                <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
+                    class="mt-4 p-3 bg-green-200 text-green-800 rounded-md">
                     {{ session('success') }}
                 </div>
             @endif
+
             @if (session('error'))
-                <div class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
+                {{-- Para erros, damos um pouco mais de tempo para o usuário ler (ex: 7 segundos) --}}
+                <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
+                    class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
                     {{ session('error') }}
                 </div>
             @endif
+
             @if (session('info'))
-                <div class="mt-4 p-3 bg-blue-200 text-blue-800 rounded-md">
+                <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
+                    class="mt-4 p-3 bg-blue-200 text-blue-800 rounded-md">
                     {{ session('info') }}
                 </div>
             @endif
+
             @if ($errors->any())
-                <div class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
+                <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)" x-show="show"
+                    class="mt-4 p-3 bg-red-200 text-red-800 rounded-md">
                     <ul class="list-disc pl-5">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>

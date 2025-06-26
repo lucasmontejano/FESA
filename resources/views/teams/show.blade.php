@@ -241,19 +241,13 @@
                 <div class="profile-name">{{ $team->name }}</div>
                 <div class="profile-description">Líder: {{ $team->leader->nickname }}</div>
 
-                {{-- Contêiner para os botões de ação --}}
                 <div class="flex justify-between items-center mt-4">
                     
-                    {{-- Botões existentes à esquerda --}}
                     <div>
                         @auth
                             @if (Auth::id() === $team->leader_id)
-                                
-                                {{-- ### INÍCIO DA CORREÇÃO ### --}}
-                                {{-- Adicionamos as classes flex, items-center e gap-4 ao contêiner --}}
                                 <div class="flex items-center gap-4">
                                     
-                                    {{-- O link "Gerenciar Time", agora sem o style de margem --}}
                                     <a href="{{ route('teams.manage', $team->id) }}" class="btn btn-primary">Gerenciar Time</a>
 
                                     @can('update', $team)
@@ -263,13 +257,11 @@
                                     @endcan
 
                                 </div>
-                                {{-- ### FIM DA CORREÇÃO ### --}}
 
                             @endif
                         @endauth
                     </div>
 
-                    {{-- Novo botão "Sair do Time" à direita --}}
                     <div>
                         @auth
                             {{-- Condição: Mostra o botão apenas se o usuário logado for membro E NÃO for o líder --}}
@@ -287,7 +279,6 @@
 
                 </div>
 
-                {{-- O contêiner do link de convite (lógica JS não precisa mudar) --}}
                 @can('update', $team)
                     <div id="invite-link-container-{{ $team->id }}" style="display: none; margin-top: 10px;">
                         <div class="input-group">
@@ -303,7 +294,6 @@
             </div>
         </div>
 
-            {{-- Roster --}}
             <div>
                 <h3 class="section-title">Integrantes</h3>
                 <div class="roster-container" id="sortable-roster">
@@ -351,10 +341,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const rosterContainer = document.getElementById('sortable-roster');
     const saveBtn = document.getElementById('save-roster-btn');
     
-    // Initialize SortableJS on roster container
     new Sortable(rosterContainer, {
         animation: 150,
-        draggable: '.roster-member:not(.leader)', // Only non-leaders are draggable
+        draggable: '.roster-member:not(.leader)',
         ghostClass: 'dragging',
         onStart: function() {
             saveBtn.classList.add('visible');
@@ -364,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Update role classes based on position
     function updateMemberRoles() {
         const members = document.querySelectorAll('#sortable-roster .roster-member:not(.leader)');
         
@@ -408,13 +396,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Your existing invite link functions
     function generateInviteLink(teamId) {
-        // Forma mais robusta de obter o token CSRF, caso este script esteja em um arquivo .js separado
-        // Certifique-se de ter <meta name="csrf-token" content="{{ csrf_token() }}"> no <head> do seu HTML.
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        fetch(`/teams/${teamId}/invite`, { // Certifique-se que esta rota POST exista
+        fetch(`/teams/${teamId}/invite`, { 
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
@@ -438,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const inputField = document.getElementById(`invite-link-${teamId}`);
                 const expiryInfoElement = document.getElementById(`invite-expires-${teamId}`);
                 
-                // Encontra o elemento <small> genérico para poder escondê-lo se necessário
                 const genericMultipleUseTextElement = container.querySelector('small.text-muted.d-block');
 
 
@@ -451,27 +435,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayText = `Válido para ${data.uses_left} ${data.uses_left === 1 ? 'uso' : 'usos'}`;
                 }
 
-                if (data.expires) { // data.expires vem do diffForHumans()
+                if (data.expires) {
                     if (displayText) {
                         displayText += `, expira ${data.expires}.`;
                     } else {
                         displayText = `Expira ${data.expires}.`;
                     }
                 } else if (displayText) {
-                    displayText += '.'; // Adiciona um ponto final se apenas o texto de usos estiver presente
+                    displayText += '.'; 
                 }
 
 
                 if (expiryInfoElement) {
-                    expiryInfoElement.textContent = displayText || 'Link gerado.'; // Atualiza o conteúdo do <small>
-                    expiryInfoElement.style.display = 'inline'; // Garante que esteja visível (pode ser 'block' se preferir nova linha)
+                    expiryInfoElement.textContent = displayText || 'Link gerado.';
+                    expiryInfoElement.style.display = 'inline';
                 }
                 
-                // Se exibimos informações detalhadas, escondemos a mensagem genérica
+
                 if (genericMultipleUseTextElement && displayText) {
                     genericMultipleUseTextElement.style.display = 'none';
                 } else if (genericMultipleUseTextElement) {
-                     genericMultipleUseTextElement.style.display = 'block'; // Ou 'inline'
+                     genericMultipleUseTextElement.style.display = 'block';
                 }
 
 
@@ -496,11 +480,10 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        inputField.select(); // Seleciona o texto no campo de input
-        inputField.setSelectionRange(0, 99999); // Para compatibilidade com dispositivos móveis
-
+        inputField.select();
+        inputField.setSelectionRange(0, 99999);
         try {
-            var successful = document.execCommand('copy'); // Tenta copiar o texto selecionado
+            var successful = document.execCommand('copy');
             var msg = successful ? 'Link copiado para a área de transferência!' : 'Falha ao copiar o link.';
             alert(msg);
         } catch (err) {
